@@ -15,6 +15,7 @@
 //: * Per world game modes
 namespace aliuly\worldprotect;
 
+use pocketmine\data\java\GameModeIdMap;
 use pocketmine\player\GameMode;
 use pocketmine\plugin\PluginBase as Plugin;
 use pocketmine\event\Listener;
@@ -24,16 +25,17 @@ use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\player\Player;
 use aliuly\worldprotect\common\MPMU;
 use aliuly\worldprotect\common\mc;
+use function array_key_last;
+use function is_int;
 
 class GmMgr extends BaseWp implements Listener {
-
 	public function __construct(Plugin $plugin) {
 		parent::__construct($plugin);
-		$this->owner->getServer()->getPluginManager()->registerEvents($this, $this->owner);
 		$this->enableSCmd("gm",["usage" => mc::_("[value]"),
 										"help" => mc::_("Sets the world game mode"),
 										"permission" => "wp.cmd.gm",
 										"aliases" => ["gamemode"]]);
+        $this->owner->getServer()->getPluginManager()->registerEvents($this, $this->owner);
 	}
 	public function onSCommand(CommandSender $c,Command $cc,$scmd,$world,array $args) {
 		if ($scmd != "gm") return false;
@@ -53,10 +55,10 @@ class GmMgr extends BaseWp implements Listener {
 			$this->owner->unsetCfg($world,"gamemode");
 			$this->owner->getServer()->broadcastMessage(mc::_("[WP] %1% gamemode removed", $world));
 		} else {
-			$this->owner->setCfg($world,"gamemode",$newmode->getEnglishName());
+			$this->owner->setCfg($world,"gamemode",$newmode->getAliases()[array_key_last($newmode->getAliases())]);
 			$this->owner->getServer()->broadcastMessage(mc::_("[WP] %1% gamemode set to %2%",
 																			  $world,
-																			  $newmode->getEnglishName()));
+																			  MPMU::gamemodeStr($newmode->getEnglishName())));
 		}
 		return true;
 	}
@@ -64,25 +66,29 @@ class GmMgr extends BaseWp implements Listener {
 	/**
 	 * @priority HIGHEST
 	 */
-	public function onTeleport(EntityTeleportEvent $ev){
+	public function onTeleport(EntityTeleportEvent $ev): void {
 		if ($ev->isCancelled()) return;
+
+        $world = $ev->getTo()->getWorld();
+		$oldWorld = $ev->getFrom()->getWorld();
+        if ($oldWorld->getId() === $world->getId()) return;
+
 		$pl = $ev->getEntity();
 		if (!($pl instanceof Player)) return;
 		if ($pl->hasPermission("wp.cmd.gm.exempt")) return;
 
-		$world = $ev->getTo()->getWorld();
-		if (!$world) {
-			$world = $pl->getWorld();
-		}
 		$world = $world->getFolderName();
 		$gm = $this->owner->getCfg($world,"gamemode",null);
-		if ($gm === null) {
-			$gm = $this->owner->getServer()->getGamemode()->getEnglishName();
-		}
-        $gm = GameMode::fromString($gm);
-		if ($pl->getGamemode() instanceof $gm) return;
+		if ($gm === null)
+			$gm = $this->owner->getServer()->getGamemode();
+        if (!$gm instanceof GameMode)
+            $gm = GameMode::fromString($gm);
+        if ($gm === null) return;
 		$pl->sendMessage(mc::_("Changing gamemode to %1%",
 									  MPMU::gamemodeStr($gm->getEnglishName())));
+
+        if ($pl->getGamemode()->id() == $gm->id()) return;
+
 		$pl->setGamemode($gm);
 	}
 }
