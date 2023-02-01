@@ -13,16 +13,15 @@ namespace aliuly\worldprotect;
 //= features
 //: * Per World PvP
 
-use pocketmine\plugin\PluginBase as Plugin;
-use pocketmine\event\Listener;
-use pocketmine\command\CommandSender;
+use aliuly\worldprotect\common\mc;
 use pocketmine\command\Command;
-
+use pocketmine\command\CommandSender;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\Listener;
 use pocketmine\player\Player;
+use pocketmine\plugin\PluginBase as Plugin;
 use pocketmine\utils\TextFormat;
-use aliuly\worldprotect\common\mc;
 
 class WpPvpMgr extends BaseWp implements Listener {
 	public function __construct(Plugin $plugin) {
@@ -77,7 +76,7 @@ class WpPvpMgr extends BaseWp implements Listener {
 		if ($this->wcfg[$world] !== false) {
 			$sp = $pl->getWorld()->getSpawnLocation();
 			$dist = $sp->distance($pl);
-			if ($dist > $this->owner->getServer()->getSpawnRadius()) return;
+			//if ($dist > $this->owner->getServer()->getSpawnRadius()) return;
 		}
 		$this->owner->msg($ev->getDamager(),mc::_("You are not allowed to do that here"));
 		$ev->cancel();

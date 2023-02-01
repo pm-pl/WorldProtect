@@ -8,12 +8,12 @@
 //:      - shows details of an specific world
 namespace aliuly\worldprotect;
 
-use pocketmine\command\CommandSender;
-use pocketmine\command\Command;
-use pocketmine\utils\TextFormat;
-use pocketmine\utils\Config;
 use aliuly\worldprotect\common\mc;
 use aliuly\worldprotect\common\MPMU;
+use pocketmine\command\Command;
+use pocketmine\command\CommandSender;
+use pocketmine\utils\Config;
+use pocketmine\utils\TextFormat;
 
 class WpList extends BaseWp {
 	public function __construct($owner) {

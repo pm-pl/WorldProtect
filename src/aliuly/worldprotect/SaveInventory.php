@@ -8,17 +8,16 @@
 
 namespace aliuly\worldprotect;
 
-use pocketmine\player\GameMode;
-use pocketmine\plugin\PluginBase as Plugin;
+use aliuly\worldprotect\common\PluginCallbackTask;
 use pocketmine\event\Listener;
-use pocketmine\item\Item;
 use pocketmine\event\player\PlayerDeathEvent;
 use pocketmine\event\player\PlayerGameModeChangeEvent;
-use pocketmine\player\Player;
+use pocketmine\item\Item;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\ListTag;
-
-use aliuly\worldprotect\common\PluginCallbackTask;
+use pocketmine\player\GameMode;
+use pocketmine\player\Player;
+use pocketmine\plugin\PluginBase as Plugin;
 use pocketmine\Server;
 
 class SaveInventory extends BaseWp implements Listener {

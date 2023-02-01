@@ -1,9 +1,8 @@
 <?php
 namespace aliuly\worldprotect\common;
 
-use pocketmine\command\CommandSender;
 use pocketmine\command\Command;
-use aliuly\worldprotect\common\mc;
+use pocketmine\command\CommandSender;
 
 /**
  * Sub Command dispatcher

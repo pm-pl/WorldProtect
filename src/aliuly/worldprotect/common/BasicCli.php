@@ -8,7 +8,6 @@ namespace aliuly\worldprotect\common;
 use pocketmine\command\CommandSender;
 use pocketmine\command\PluginCommand;
 use pocketmine\console\ConsoleCommandSender;
-
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\TextFormat;
 

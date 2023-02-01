@@ -1,8 +1,8 @@
 <?php
 namespace aliuly\worldprotect\common;
 
-use pocketmine\scheduler\Task;
 use pocketmine\plugin\Plugin;
+use pocketmine\scheduler\Task;
 
 /**
  * Simple plugin callbacks.

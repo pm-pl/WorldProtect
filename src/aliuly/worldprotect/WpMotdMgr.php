@@ -31,17 +31,16 @@
 
 namespace aliuly\worldprotect;
 
-use pocketmine\event\entity\EntityTeleportEvent;
-use pocketmine\plugin\PluginBase as Plugin;
-use pocketmine\command\CommandSender;
+use aliuly\worldprotect\common\mc;
+use aliuly\worldprotect\common\PluginCallbackTask;
 use pocketmine\command\Command;
 use pocketmine\command\CommandExecutor;
+use pocketmine\command\CommandSender;
+use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Listener;
-
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\player\Player;
-use aliuly\worldprotect\common\PluginCallbackTask;
-use aliuly\worldprotect\common\mc;
+use pocketmine\plugin\PluginBase as Plugin;
 use pocketmine\Server;
 
 class WpMotdMgr extends BaseWp implements Listener, CommandExecutor {
@@ -78,9 +77,9 @@ class WpMotdMgr extends BaseWp implements Listener, CommandExecutor {
 		if ($sender instanceof Player) {
 			$world = $sender->getWorld()->getFolderName();
 		} else {
-			$level = $this->owner->getServer()->getDefaultLevel();
+			$level = $this->owner->getServer()->getWorldManager()->getDefaultWorld();
 			if ($level) {
-				$world = $level->getName();
+				$world = $level->getFolderName();
 			} else {
 				$world = null;
 			}

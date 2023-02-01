@@ -13,13 +13,13 @@
 //: * Limit the number of players in a world
 namespace aliuly\worldprotect;
 
-use pocketmine\plugin\PluginBase as Plugin;
-use pocketmine\event\Listener;
-use pocketmine\command\CommandSender;
-use pocketmine\command\Command;
-use pocketmine\event\entity\EntityTeleportEvent;
-use pocketmine\player\Player;
 use aliuly\worldprotect\common\mc;
+use pocketmine\command\Command;
+use pocketmine\command\CommandSender;
+use pocketmine\event\entity\EntityTeleportEvent;
+use pocketmine\event\Listener;
+use pocketmine\player\Player;
+use pocketmine\plugin\PluginBase as Plugin;
 use pocketmine\world\World as Level;
 
 class MaxPlayerMgr extends BaseWp implements Listener {

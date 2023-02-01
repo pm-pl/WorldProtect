@@ -8,8 +8,6 @@ use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 
-use aliuly\worldprotect\common\MPMU;
-
 /**
  * Basic Session Manager functionality
  */

@@ -27,15 +27,14 @@
 
 namespace aliuly\worldprotect;
 
-use pocketmine\plugin\PluginBase as Plugin;
-use pocketmine\event\Listener;
-use pocketmine\command\CommandSender;
-use pocketmine\command\Command;
-use pocketmine\player\Player;
 use aliuly\worldprotect\common\mc;
-
-use pocketmine\event\player\PlayerMoveEvent;
+use pocketmine\command\Command;
+use pocketmine\command\CommandSender;
 use pocketmine\event\entity\EntityTeleportEvent;
+use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerMoveEvent;
+use pocketmine\player\Player;
+use pocketmine\plugin\PluginBase as Plugin;
 
 class WpBordersMgr extends BaseWp implements Listener {
 	public function __construct(Plugin $plugin) {

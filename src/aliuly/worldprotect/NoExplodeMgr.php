@@ -13,13 +13,13 @@
 //: * Control explosions per world
 namespace aliuly\worldprotect;
 
-use pocketmine\plugin\PluginBase as Plugin;
-use pocketmine\event\Listener;
-use pocketmine\command\CommandSender;
-use pocketmine\command\Command;
-use pocketmine\utils\TextFormat;
-use pocketmine\event\entity\EntityExplodeEvent;
 use aliuly\worldprotect\common\mc;
+use pocketmine\command\Command;
+use pocketmine\command\CommandSender;
+use pocketmine\event\entity\EntityExplodeEvent;
+use pocketmine\event\Listener;
+use pocketmine\plugin\PluginBase as Plugin;
+use pocketmine\utils\TextFormat;
 
 class NoExplodeMgr extends BaseWp implements Listener {
 	public function __construct(Plugin $plugin) {
@@ -71,7 +71,7 @@ class NoExplodeMgr extends BaseWp implements Listener {
 		if ($this->wcfg[$world] == "spawn") {
 			$sp = $et->getWorld()->getSpawnLocation();
 			$dist = $sp->distance($et);
-			if ($dist > $this->owner->getServer()->getSpawnRadius()) return;
+			//if ($dist > $this->owner->getServer()->getSpawnRadius()) return;
 		}
 		$ev->cancel();
 		$this->owner->getLogger()->notice(TextFormat::RED.

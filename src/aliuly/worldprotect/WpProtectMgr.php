@@ -35,16 +35,16 @@ namespace aliuly\worldprotect;
 //:
 
 
-use pocketmine\plugin\PluginBase as Plugin;
-use pocketmine\event\Listener;
-use pocketmine\command\CommandSender;
+use aliuly\worldprotect\common\mc;
 use pocketmine\command\Command;
-use pocketmine\player\Player;
-
-use pocketmine\block\Block;
+use pocketmine\command\CommandSender;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
-use aliuly\worldprotect\common\mc;
+use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerBucketEmptyEvent;
+use pocketmine\event\player\PlayerBucketFillEvent;
+use pocketmine\player\Player;
+use pocketmine\plugin\PluginBase as Plugin;
 
 class WpProtectMgr extends BaseWp implements Listener {
 	public function __construct(Plugin $plugin) {
@@ -146,4 +146,26 @@ class WpProtectMgr extends BaseWp implements Listener {
 		$this->owner->msg($pl,mc::_("You are not allowed to do that here"));
 		$ev->cancel();
 	}
+
+    public function onBucketEmpty(PlayerBucketEmptyEvent $ev): void
+    {
+        if ($ev->isCancelled()) return;
+
+		$pl = $ev->getPlayer();
+		if ($this->checkBlockPlaceBreak($pl)) return;
+
+		$this->owner->msg($pl,mc::_("You are not allowed to do that here"));
+		$ev->cancel();
+    }
+
+    public function onBucketFill(PlayerBucketFillEvent $ev): void
+    {
+        if ($ev->isCancelled()) return;
+
+		$pl = $ev->getPlayer();
+		if ($this->checkBlockPlaceBreak($pl)) return;
+
+		$this->owner->msg($pl,mc::_("You are not allowed to do that here"));
+		$ev->cancel();
+    }
 }

@@ -1,12 +1,10 @@
 <?php
 namespace aliuly\worldprotect\common;
 
-use pocketmine\command\CommandSender;
 use pocketmine\command\Command;
+use pocketmine\command\CommandSender;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\TextFormat;
-use aliuly\worldprotect\common\mc;
-use aliuly\worldprotect\common\BasicCli;
 
 /**
  * Implements simple help functionality for sub-commands

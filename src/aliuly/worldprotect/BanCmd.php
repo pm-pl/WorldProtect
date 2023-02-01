@@ -11,14 +11,12 @@
 //: * Ban commands on a per world basis
 namespace aliuly\worldprotect;
 
-use pocketmine\plugin\PluginBase as Plugin;
-use pocketmine\event\Listener;
-use pocketmine\command\CommandSender;
-use pocketmine\command\Command;
-
-use pocketmine\event\player\PlayerCommandPreprocessEvent;
-use pocketmine\player\Player;
 use aliuly\worldprotect\common\mc;
+use pocketmine\command\Command;
+use pocketmine\command\CommandSender;
+use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerCommandPreprocessEvent;
+use pocketmine\plugin\PluginBase as Plugin;
 
 class BanCmd extends BaseWp implements Listener {
 	public function __construct(Plugin $plugin) {

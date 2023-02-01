@@ -5,14 +5,10 @@
 
 namespace aliuly\worldprotect\common;
 use pocketmine\command\CommandExecutor;
-use pocketmine\item\Item;
-use pocketmine\plugin\Plugin;
-use pocketmine\Server;
-use pocketmine\utils\TextFormat;
-use pocketmine\utils\MainLogger;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
-use aliuly\worldprotect\common\mc;
+use pocketmine\plugin\Plugin;
+use pocketmine\Server;
 
 /**
  * My PocketMine Utils class
