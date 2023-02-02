@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 //= cmd:banitem|unbanitem,Sub_Commands
 //: Control itmes that can/cannot be used
 //> usage: /wp  _[world]_ **banitem|unbanitem** _[Item-ids]_
@@ -31,29 +33,30 @@ use pocketmine\event\player\PlayerItemConsumeEvent;
 use pocketmine\item\Item;
 use pocketmine\item\StringToItemParser;
 use pocketmine\plugin\PluginBase as Plugin;
+use function count;
 
-class BanItem extends BaseWp implements Listener {
-	public function __construct(Plugin $plugin) {
+class BanItem extends BaseWp implements Listener{
+	public function __construct(Plugin $plugin){
 		parent::__construct($plugin);
 		$this->owner->getServer()->getPluginManager()->registerEvents($this, $this->owner);
-		$this->enableSCmd("banitem",["usage" => mc::_("[id] ..."),
-											  "help" => mc::_("Ban an item"),
-											  "permission" => "wp.cmd.banitem"]);
-		$this->enableSCmd("unbanitem",["usage" => mc::_("[id] ..."),
-												 "help" => mc::_("Unban item"),
-												 "permission" => "wp.cmd.banitem"]);
+		$this->enableSCmd("banitem", ["usage" => mc::_("[id] ..."),
+			"help" => mc::_("Ban an item"),
+			"permission" => "wp.cmd.banitem"]);
+		$this->enableSCmd("unbanitem", ["usage" => mc::_("[id] ..."),
+			"help" => mc::_("Unban item"),
+			"permission" => "wp.cmd.banitem"]);
 	}
 
-	public function onSCommand(CommandSender $c,Command $cc,$scmd,$world,array $args) {
-		if ($scmd != "banitem" && $scmd != "unbanitem") return false;
-		if (count($args) == 0) {
+	public function onSCommand(CommandSender $c, Command $cc, $scmd, $world, array $args){
+		if($scmd != "banitem" && $scmd != "unbanitem") return false;
+		if(count($args) == 0){
 			$ids = $this->owner->getCfg($world, "banitem", []);
-			if (count($ids) == 0) {
-				$c->sendMessage(mc::_("[WP] No banned items in %1%",$world));
-			} else {
-				$ln  = mc::_("[WP] Items(%1%):",count($ids));
+			if(count($ids) == 0){
+				$c->sendMessage(mc::_("[WP] No banned items in %1%", $world));
+			}else{
+				$ln = mc::_("[WP] Items(%1%):", count($ids));
 				$q = "";
-				foreach ($ids as $id=>$n) {
+				foreach($ids as $id => $n){
 					$ln .= "$q $n($id)";
 					$q = ",";
 				}
@@ -64,66 +67,69 @@ class BanItem extends BaseWp implements Listener {
 		$cc = 0;
 
 		$ids = $this->owner->getCfg($world, "banitem", []);
-		if ($scmd == "unbanitem") {
-			foreach ($args as $i) {
+		if($scmd == "unbanitem"){
+			foreach($args as $i){
 				$item = StringToItemParser::getInstance()->parse($i);
-				if (isset($ids[$item->getId()])) {
+				if(isset($ids[$item->getId()])){
 					unset($ids[$item->getId()]);
 					++$cc;
 				}
 			}
-		} elseif ($scmd == "banitem") {
-			foreach ($args as $i) {
+		}elseif($scmd == "banitem"){
+			foreach($args as $i){
 				$item = StringToItemParser::getInstance()->parse($i);
-				if ($item instanceof Item && isset($ids[$item->getId()])) continue;
+				if($item instanceof Item && isset($ids[$item->getId()])) continue;
 				$ids[$item->getId()] = ItemName::str($item);
 				++$cc;
 			}
-		} else {
+		}else{
 			return false;
 		}
-		if (!$cc) {
+		if(!$cc){
 			$c->sendMessage(mc::_("No items updated"));
 			return true;
 		}
-		if (count($ids)) {
-			$this->owner->setCfg($world,"banitem",$ids);
-		} else {
-			$this->owner->unsetCfg($world,"banitem");
+		if(count($ids)){
+			$this->owner->setCfg($world, "banitem", $ids);
+		}else{
+			$this->owner->unsetCfg($world, "banitem");
 		}
-		$c->sendMessage(mc::_("Items changed: %1%",$cc));
+		$c->sendMessage(mc::_("Items changed: %1%", $cc));
 		return true;
 	}
-	public function onInteract(PlayerInteractEvent $ev) {
-		if ($ev->isCancelled()) return;
+
+	public function onInteract(PlayerInteractEvent $ev){
+		if($ev->isCancelled()) return;
 		$pl = $ev->getPlayer();
-                if ($pl->hasPermission("wp.banitem.exempt")) return;
+		if($pl->hasPermission("wp.banitem.exempt")) return;
 		$world = $pl->getWorld()->getFolderName();
-		if (!isset($this->wcfg[$world])) return;
+		if(!isset($this->wcfg[$world])) return;
 		$item = $ev->getItem();
-		if (!isset($this->wcfg[$world][$item->getId()])) return;
+		if(!isset($this->wcfg[$world][$item->getId()])) return;
 		$pl->sendMessage(mc::_("You can not use that item here!"));
 		$ev->cancel();
 	}
-	public function onConsume(PlayerItemConsumeEvent $ev) {
-		if ($ev->isCancelled()) return;
+
+	public function onConsume(PlayerItemConsumeEvent $ev){
+		if($ev->isCancelled()) return;
 		$pl = $ev->getPlayer();
-		if ($pl->hasPermission("wp.banitem.exempt")) return;
+		if($pl->hasPermission("wp.banitem.exempt")) return;
 		$world = $pl->getWorld()->getFolderName();
-		if (!isset($this->wcfg[$world])) return;
+		if(!isset($this->wcfg[$world])) return;
 		$item = $ev->getItem();
-		if (!isset($this->wcfg[$world][$item->getId()])) return;
+		if(!isset($this->wcfg[$world][$item->getId()])) return;
 		$pl->sendMessage(mc::_("You can not use that item here!"));
 		$ev->cancel();
 	}
-	public function onBlockPlace(BlockPlaceEvent $ev) {
-		if ($ev->isCancelled()) return;
+
+	public function onBlockPlace(BlockPlaceEvent $ev){
+		if($ev->isCancelled()) return;
 		$pl = $ev->getPlayer();
-		if ($pl->hasPermission("wp.banitem.exempt")) return;
+		if($pl->hasPermission("wp.banitem.exempt")) return;
 		$world = $pl->getWorld()->getFolderName();
-		if (!isset($this->wcfg[$world])) return;
+		if(!isset($this->wcfg[$world])) return;
 		$item = $ev->getItem();
-		if (!isset($this->wcfg[$world][$item->getId()])) return;
+		if(!isset($this->wcfg[$world][$item->getId()])) return;
 		$pl->sendMessage(mc::_("You can not use that item here!"));
 		$ev->cancel();
 	}

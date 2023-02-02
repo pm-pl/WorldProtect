@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 //= module:gm-save-inv
 //: Will save inventory contents when switching gamemodes.
 //:
@@ -20,20 +22,20 @@ use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase as Plugin;
 use pocketmine\Server;
 
-class SaveInventory extends BaseWp implements Listener {
+class SaveInventory extends BaseWp implements Listener{
 	const TICKS = 10;
 	const DEBUG = false;
 	private $saveOnDeath = true;
 
-	public function __construct(Plugin $plugin) {
+	public function __construct(Plugin $plugin){
 		parent::__construct($plugin);
 		$this->saveOnDeath = $plugin->getConfig()->getNested("features")["death-save-inv"] ?? true;
 		Server::getInstance()->getPluginManager()->registerEvents($this, $this->owner);
 	}
 
-	public function loadInv(Player $player) {
+	public function loadInv(Player $player){
 		$inventoryTag = $player->getSaveData()->getListTag("SurvivalInventory");
-		if(!isset($inventoryTag)) {
+		if(!isset($inventoryTag)){
 			if(self::DEBUG) Server::getInstance()->getLogger()->info("[WP Inventory] SurvivalInventory Not Found");
 			return;
 		}
@@ -41,9 +43,9 @@ class SaveInventory extends BaseWp implements Listener {
 			/** @var CompoundTag $item */
 			foreach($inventoryTag as $i => $item){
 				$slot = $item->getByte("Slot");
-				if ($slot >= 0 and $slot < 9){ //Hotbar
+				if($slot >= 0 && $slot < 9){ //Hotbar
 					//Old hotbar saving stuff, ignore it
-				}elseif($slot >= 100 and $slot < 104){ //Armor
+				}elseif($slot >= 100 && $slot < 104){ //Armor
 					$player->getArmorInventory()->setItem($slot - 100, Item::nbtDeserialize($item));
 				}else{
 					$player->getInventory()->setItem($slot - 9, Item::nbtDeserialize($item));
@@ -53,23 +55,23 @@ class SaveInventory extends BaseWp implements Listener {
 		}
 	}
 
-	public function saveInv(Player $player) {
+	public function saveInv(Player $player){
 		$player->save();
 		$inventoryTag = $player->getSaveData()->getListTag("Inventory");
 		$player->getSaveData()->setTag("SurvivalInventory", new ListTag($inventoryTag->getAllValues()));
 		$player->save();
 	}
 
-	public function onGmChange(PlayerGameModeChangeEvent $ev) {
-		if ($ev->isCancelled()) return;
+	public function onGmChange(PlayerGameModeChangeEvent $ev){
+		if($ev->isCancelled()) return;
 		$player = $ev->getPlayer();
 		$newgm = $ev->getNewGamemode();
 		$oldgm = $player->getGamemode();
 		if(self::DEBUG) Server::getInstance()->getLogger()->info("[WP Inventory] Changing GM from " . $oldgm->name() . " to " . $newgm->name() . "...");
-		if(($newgm == GameMode::CREATIVE() || $newgm == GameMode::SPECTATOR()) && ($oldgm == GameMode::SURVIVAL() || $oldgm == GameMode::ADVENTURE())) {// We need to save inventory
+		if(($newgm == GameMode::CREATIVE() || $newgm == GameMode::SPECTATOR()) && ($oldgm == GameMode::SURVIVAL() || $oldgm == GameMode::ADVENTURE())){// We need to save inventory
 			$this->saveInv($player);
 			if(self::DEBUG) Server::getInstance()->getLogger()->info("[WP Inventory] Saved Inventory from GM  " . $oldgm->name() . " to " . $newgm->name() . ".");
-		} elseif(($newgm == GameMode::SURVIVAL() || $newgm == GameMode::ADVENTURE()) && ($oldgm == GameMode::CREATIVE() || $oldgm == GameMode::SPECTATOR())) {
+		}elseif(($newgm == GameMode::SURVIVAL() || $newgm == GameMode::ADVENTURE()) && ($oldgm == GameMode::CREATIVE() || $oldgm == GameMode::SPECTATOR())){
 			if(self::DEBUG) $this->owner->getServer()->getLogger()->info("[WP Inventory] GM Change - Clear Player Inventory and load SurvivalInventory...");
 			$player->getInventory()->clearAll();
 			// Need to restore inventory (but later!)
@@ -77,7 +79,7 @@ class SaveInventory extends BaseWp implements Listener {
 		}
 	}
 
-	public function PlayerDeath(PlayerDeathEvent $event) {
+	public function PlayerDeath(PlayerDeathEvent $event){
 		if(!$this->saveOnDeath) return;
 		$player = $event->getPlayer();
 		// Need to restore inventory (but later!).

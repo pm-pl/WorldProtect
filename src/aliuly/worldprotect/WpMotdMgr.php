@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 //= cmd:/motd,Main_Commands
 //: Shows the world's *motd* text
 //> usage: /motd  _[world]_
@@ -42,12 +44,16 @@ use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase as Plugin;
 use pocketmine\Server;
+use function array_shift;
+use function count;
+use function implode;
+use function is_array;
 
-class WpMotdMgr extends BaseWp implements Listener, CommandExecutor {
+class WpMotdMgr extends BaseWp implements Listener, CommandExecutor{
 	protected $ticks;
 	protected $auto;
 
-	static public function defaults() {
+	static public function defaults(){
 		return [
 			//= cfg:motd
 			"# ticks" => "line delay when showing multi-line motd texts.",
@@ -56,95 +62,95 @@ class WpMotdMgr extends BaseWp implements Listener, CommandExecutor {
 			"auto-motd" => true,
 		];
 	}
-	public function __construct(Plugin $plugin,$cfg) {
+
+	public function __construct(Plugin $plugin, $cfg){
 		parent::__construct($plugin);
 		Server::getInstance()->getPluginManager()->registerEvents($this, $this->owner);
 		$this->ticks = $cfg["ticks"];
-		$this->auto  = $cfg["auto-motd"];
-		$this->enableSCmd("motd",["usage" => mc::_("[text]"),
-										  "help" => mc::_("Edits world motd text"),
-										  "permission" => "wp.cmd.wpmotd"]);
+		$this->auto = $cfg["auto-motd"];
+		$this->enableSCmd("motd", ["usage" => mc::_("[text]"),
+			"help" => mc::_("Edits world motd text"),
+			"permission" => "wp.cmd.wpmotd"]);
 
 		$this->enableCmd("motd",
-							  ["description"=>mc::_("Shows world motd text"),
-								"usage" => "/motd [world]",
-								"permission" => "wp.motd" ]);
+			["description" => mc::_("Shows world motd text"),
+				"usage" => "/motd [world]",
+				"permission" => "wp.motd"]);
 	}
 
-
 	public function onCommand(CommandSender $sender, Command $cmd, string $label, array $args) : bool{
-		if ($cmd->getName() != "motd") return false;
-		if ($sender instanceof Player) {
+		if($cmd->getName() != "motd") return false;
+		if($sender instanceof Player){
 			$world = $sender->getWorld()->getFolderName();
-		} else {
+		}else{
 			$level = $this->owner->getServer()->getWorldManager()->getDefaultWorld();
-			if ($level) {
+			if($level){
 				$world = $level->getFolderName();
-			} else {
+			}else{
 				$world = null;
 			}
 		}
-		if (isset($args[0]) && $this->owner->getServer()->getWorldManager()->isWorldGenerated($args[0])) {
+		if(isset($args[0]) && $this->owner->getServer()->getWorldManager()->isWorldGenerated($args[0])){
 			$world = array_shift($args);
 		}
-		if ($world === null) {
+		if($world === null){
 			$sender->sendMessage(mc::_("[WP] Must specify a world"));
 			return false;
 		}
-		if (count($args) != 0) return false;
-		$this->showMotd($sender,$world);
+		if(count($args) != 0) return false;
+		$this->showMotd($sender, $world);
 		return true;
 	}
 
-	public function onSCommand(CommandSender $c,Command $cc,$scmd,$world,array $args) {
-		if ($scmd != "motd") return false;
-		if (count($args) == 0) {
-			$this->owner->unsetCfg($world,"motd");
-			$c->sendMessage(mc::_("[WP] motd for %1% removed",$world));
+	public function onSCommand(CommandSender $c, Command $cc, $scmd, $world, array $args){
+		if($scmd != "motd") return false;
+		if(count($args) == 0){
+			$this->owner->unsetCfg($world, "motd");
+			$c->sendMessage(mc::_("[WP] motd for %1% removed", $world));
 			return true;
 		}
-		$this->owner->setCfg($world,"motd",implode(" ",$args));
-		$c->sendMessage(mc::_("[WP] motd for %1% updated",$world));
+		$this->owner->setCfg($world, "motd", implode(" ", $args));
+		$c->sendMessage(mc::_("[WP] motd for %1% updated", $world));
 		return true;
 	}
 
-	private function showMotd($c,$world) {
-		if (!$c->hasPermission("wp.motd")) return;
+	private function showMotd($c, $world){
+		if(!$c->hasPermission("wp.motd")) return;
 
 		$motd = $this->owner->getCfg($world, "motd", null);
-		if ($motd === null) return true;
-		if (is_array($motd)) {
-			if ($c instanceof Player) {
+		if($motd === null) return true;
+		if(is_array($motd)){
+			if($c instanceof Player){
 				$ticks = $this->ticks;
-				foreach ($motd as $ln) {
-					$this->owner->getScheduler()->scheduleDelayedTask(new PluginCallbackTask($this->owner,[$c,"sendMessage"],[$ln]),$ticks);
+				foreach($motd as $ln){
+					$this->owner->getScheduler()->scheduleDelayedTask(new PluginCallbackTask($this->owner, [$c, "sendMessage"], [$ln]), $ticks);
 					$ticks += $this->ticks;
 				}
-			} else {
-				foreach ($motd as $ln) {
+			}else{
+				foreach($motd as $ln){
 					$c->sendMessage($ln);
 				}
 			}
-		} else {
+		}else{
 			$c->sendMessage($motd);
 		}
 	}
 
-	public function onJoin(PlayerJoinEvent $ev) {
-		if (!$this->auto) return;
+	public function onJoin(PlayerJoinEvent $ev){
+		if(!$this->auto) return;
 		$pl = $ev->getPlayer();
-		$this->showMotd($pl,$pl->getWorld()->getFolderName());
+		$this->showMotd($pl, $pl->getWorld()->getFolderName());
 	}
-	public function onLevelChange(EntityTeleportEvent $ev)
-    {
-        if ($ev->getFrom()->getWorld()->getFolderName() !== $ev->getTo()->getWorld()->getFolderName()) {
 
-            if (!$this->auto) return;
-            $pl = $ev->getEntity();
-            if (!($pl instanceof Player)) return;
-            $level = $ev->getEntity()->getWorld()->getFolderName();
-            $this->showMotd($pl, $level);
+	public function onLevelChange(EntityTeleportEvent $ev){
+		if($ev->getFrom()->getWorld()->getFolderName() !== $ev->getTo()->getWorld()->getFolderName()){
 
-        }
+			if(!$this->auto) return;
+			$pl = $ev->getEntity();
+			if(!($pl instanceof Player)) return;
+			$level = $ev->getEntity()->getWorld()->getFolderName();
+			$this->showMotd($pl, $level);
+
+		}
 	}
 }

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace aliuly\worldprotect\common;
 
 use pocketmine\plugin\Plugin;
@@ -21,25 +24,16 @@ class PluginCallbackTask extends Task{
 	/** @var callable */
 	protected $callable;
 
-	/**
-	 * @param Plugin   $owner
-	 * @param callable $callable
-	 * @param array    $args
-	 */
 	public function __construct(private Plugin $owner, callable $callable, protected array $args = []){
 		$this->callable = $callable;
 		$this->args[] = $this;
 	}
-	/**
-	 * @return callable
-	 */
-	public function getCallable(): callable
-    {
+
+	public function getCallable() : callable{
 		return $this->callable;
 	}
 
-	public function onRun(): void
-    {
+	public function onRun() : void{
 		$c = $this->callable;
 		$args = $this->args;
 		$args[] = $this->getHandler()->getPeriod();

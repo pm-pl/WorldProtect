@@ -1,40 +1,57 @@
 <?php
+
+declare(strict_types=1);
+
 namespace aliuly\worldprotect\common;
+
 use pocketmine\item\Item;
 use pocketmine\item\ItemIds;
+use function array_keys;
+use function constant;
+use function count;
+use function file;
+use function preg_split;
+use function str_replace;
+use function substr;
+use function trim;
 
 /**
  * ItemName database
  */
-abstract class ItemName {
+abstract class ItemName{
 	/** @var array|null $xnames extended names */
 	static protected array|null $xnames = null;
 	/** @var string[] $items Nice names for items */
 	static protected array $items = [];
 	/** @var string[] $usrnames Possibly localized names for items */
 	static protected array $usrnames = [];
+
 	/**
 	 * Initialize $usrnames
+	 *
 	 * @param string[] $names - names to load
 	 */
-	static public function initUsrNames(array $names) {
+	static public function initUsrNames(array $names){
 		self::$usrnames = $names;
 	}
+
 	/**
 	 * Load the specified item names.
 	 * Return number of items read, -1 in case of error.
+	 *
 	 * @param string $f - Filename to load
+	 *
 	 * @return int
 	 */
-	public static function loadUsrNames($f) {
-		$tx = file($f, FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES);
+	public static function loadUsrNames($f){
+		$tx = file($f, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 		$i = 0;
-		if ($tx === false) return -1;
-		foreach ($tx as $x) {
+		if($tx === false) return -1;
+		foreach($tx as $x){
 			$x = trim($x);
-			if (substr($x,0,1) == "#" || substr($x,0,1) == ";") continue;
-			$x = preg_split('/\s*=\s*/',$x,2);
-			if (count($x) != 2) continue;
+			if(substr($x, 0, 1) == "#" || substr($x, 0, 1) == ";") continue;
+			$x = preg_split('/\s*=\s*/', $x, 2);
+			if(count($x) != 2) continue;
 			++$i;
 			self::$usrnames[$x[0]] = $x[1];
 		}
@@ -44,7 +61,7 @@ abstract class ItemName {
 	/**
 	 * Initialize extended names table
 	 */
-	static protected function initXnames() {
+	static protected function initXnames(){
 		self::$xnames = [
 			ItemIds::DYE => [
 				0 => "Ink Sac",
@@ -96,35 +113,34 @@ abstract class ItemName {
 	 * for it.
 	 *
 	 * @param Item item
-	 * @return string
 	 */
 	static public function str(Item $item) : string{
 		$id = $item->getId();
 		$meta = $item->getDamage();
-		if (isset(self::$usrnames[$id.":".$meta])) return self::$usrnames[$id.":".$meta];
-		if (isset(self::$usrnames[$id])) return self::$usrnames[$id];
-		if (self::$xnames == null) self::initXnames();
+		if(isset(self::$usrnames[$id . ":" . $meta])) return self::$usrnames[$id . ":" . $meta];
+		if(isset(self::$usrnames[$id])) return self::$usrnames[$id];
+		if(self::$xnames == null) self::initXnames();
 
-		if (isset(self::$xnames[$id])) {
-			if (isset(self::$xnames[$id][$meta])) {
+		if(isset(self::$xnames[$id])){
+			if(isset(self::$xnames[$id][$meta])){
 				return self::$xnames[$id][$meta];
-			} elseif (isset(self::$xnames[$id]["*"])) {
+			}elseif(isset(self::$xnames[$id]["*"])){
 				return self::$xnames[$id]["*"];
-			} else {
+			}else{
 				return self::$xnames[$id][0];
 			}
 		}
 		$n = $item->getName();
-		if ($n != "Unknown") return $n;
-		if (count(self::$items) == 0) {
+		if($n != "Unknown") return $n;
+		if(count(self::$items) == 0){
 			$constants = array_keys((new \ReflectionClass("pocketmine\\item\\Item"))->getConstants());
-			foreach ($constants as $constant) {
+			foreach($constants as $constant){
 				$cid = constant("pocketmine\\item\\Item::$constant");
 				$constant = str_replace("_", " ", $constant);
 				self::$items[$cid] = $constant;
 			}
 		}
-		if (isset(self::$items[$id])) return self::$items[$id];
+		if(isset(self::$items[$id])) return self::$items[$id];
 		return $n;
 	}
 }
