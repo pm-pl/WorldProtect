@@ -12,7 +12,7 @@ use function count;
 use function file;
 use function preg_split;
 use function str_replace;
-use function substr;
+use function str_starts_with;
 use function trim;
 
 /**
@@ -20,7 +20,7 @@ use function trim;
  */
 abstract class ItemName{
 	/** @var array|null $xnames extended names */
-	static protected array|null $xnames = null;
+	static protected ?array $xnames = null;
 	/** @var string[] $items Nice names for items */
 	static protected array $items = [];
 	/** @var string[] $usrnames Possibly localized names for items */
@@ -31,7 +31,7 @@ abstract class ItemName{
 	 *
 	 * @param string[] $names - names to load
 	 */
-	static public function initUsrNames(array $names){
+	static public function initUsrNames(array $names) : void{
 		self::$usrnames = $names;
 	}
 
@@ -40,16 +40,14 @@ abstract class ItemName{
 	 * Return number of items read, -1 in case of error.
 	 *
 	 * @param string $f - Filename to load
-	 *
-	 * @return int
 	 */
-	public static function loadUsrNames($f){
+	public static function loadUsrNames(string $f) : int{
 		$tx = file($f, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 		$i = 0;
 		if($tx === false) return -1;
 		foreach($tx as $x){
 			$x = trim($x);
-			if(substr($x, 0, 1) == "#" || substr($x, 0, 1) == ";") continue;
+			if(str_starts_with($x, "#") || str_starts_with($x, ";")) continue;
 			$x = preg_split('/\s*=\s*/', $x, 2);
 			if(count($x) != 2) continue;
 			++$i;
@@ -61,7 +59,7 @@ abstract class ItemName{
 	/**
 	 * Initialize extended names table
 	 */
-	static protected function initXnames(){
+	static protected function initXnames() : void{
 		self::$xnames = [
 			ItemIds::DYE => [
 				0 => "Ink Sac",
@@ -111,12 +109,10 @@ abstract class ItemName{
 	/**
 	 * Given an pocketmine\item\Item object, it returns a friendly name
 	 * for it.
-	 *
-	 * @param Item item
 	 */
 	static public function str(Item $item) : string{
 		$id = $item->getId();
-		$meta = $item->getDamage();
+		$meta = $item->getMeta();
 		if(isset(self::$usrnames[$id . ":" . $meta])) return self::$usrnames[$id . ":" . $meta];
 		if(isset(self::$usrnames[$id])) return self::$usrnames[$id];
 		if(self::$xnames == null) self::initXnames();

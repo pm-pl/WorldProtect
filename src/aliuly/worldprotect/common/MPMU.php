@@ -9,18 +9,20 @@ namespace aliuly\worldprotect\common;
 
 use pocketmine\command\CommandExecutor;
 use pocketmine\command\CommandSender;
+use pocketmine\command\PluginCommand;
 use pocketmine\player\Player;
-use pocketmine\plugin\Plugin;
+use pocketmine\plugin\PluginBase;
 use pocketmine\Server;
+use pocketmine\VersionInfo;
 use function class_exists;
 use function fclose;
 use function intval;
 use function is_array;
 use function is_callable;
 use function property_exists;
+use function str_contains;
 use function stream_get_contents;
 use function strlen;
-use function strpos;
 use function strtolower;
 use function substr;
 use function trim;
@@ -39,11 +41,9 @@ abstract class MPMU{
 	 * libcommon library version.  If a version is provided it will check
 	 * the version using apiCheck.
 	 *
-	 * @param string version Version to check
-	 *
-	 * @return string|bool
+	 * @param string $version Version to check
 	 */
-	static public function version($version = ""){
+	static public function version(string $version = "") : string|bool{
 		if($version == "") return self::VERSION;
 		return self::apiCheck(self::VERSION, $version);
 	}
@@ -51,13 +51,11 @@ abstract class MPMU{
 	/**
 	 * Used to check the PocketMine API version
 	 *
-	 * @param string version Version to check
-	 *
-	 * @return string|bool
+	 * @param string $version Version to check
 	 */
-	static public function apiVersion($version = ""){
-		if($version == "") return \pocketmine\VersionInfo::BASE_VERSION;
-		return self::apiCheck(\pocketmine\VersionInfo::BASE_VERSION, $version);
+	static public function apiVersion(string $version = "") : string|bool{
+		if($version == "") return VersionInfo::BASE_VERSION;
+		return self::apiCheck(VersionInfo::BASE_VERSION, $version);
 	}
 
 	/**
@@ -66,12 +64,10 @@ abstract class MPMU{
 	 *
 	 * >=, <=, <> or !=, =, !|~, <, >
 	 *
-	 * @param string api Installed API version
-	 * @param string version API version to compare against
-	 *
-	 * @return bool
+	 * @param string $api Installed API version
+	 * @param string $version API version to compare against
 	 */
-	static public function apiCheck($api, $version){
+	static public function apiCheck(string $api, string $version) : bool{
 		switch(substr($version, 0, 2)){
 			case ">=":
 				return version_compare($api, trim(substr($version, 2))) >= 0;
@@ -92,53 +88,38 @@ abstract class MPMU{
 			case ">":
 				return version_compare($api, trim(substr($version, 1))) > 0;
 		}
-		if(intval($api) != intval($version)) return 0;
+		if(intval($api) != intval($version)) return false;
 		return version_compare($api, $version) >= 0;
 	}
 
 	/**
 	 * Returns a localized string for the gamemode
-	 *
-	 * @param int mode
-	 *
-	 * @return string
 	 */
-	static public function gamemodeStr($mode){
+	static public function gamemodeStr(int $mode) : string{
 		if(class_exists(__NAMESPACE__ . "\\mc", false)){
-			switch($mode){
-				case 0:
-					return mc::_("Survival");
-				case 1:
-					return mc::_("Creative");
-				case 2:
-					return mc::_("Adventure");
-				case 3:
-					return mc::_("Spectator");
-			}
-			return mc::_("%1%-mode", $mode);
+			return match ($mode) {
+				0 => mc::_("Survival"),
+				1 => mc::_("Creative"),
+				2 => mc::_("Adventure"),
+				3 => mc::_("Spectator"),
+				default => mc::_("%1%-mode", (string) $mode),
+			};
 		}
-		switch($mode){
-			case 0:
-				return "Survival";
-			case 1:
-				return "Creative";
-			case 2:
-				return "Adventure";
-			case 3:
-				return "Spectator";
-		}
-		return "$mode-mode";
+		return match ($mode) {
+			0 => "Survival",
+			1 => "Creative",
+			2 => "Adventure",
+			3 => "Spectator",
+			default => "$mode-mode",
+		};
 	}
 
 	/**
 	 * Check's player or sender's permissions and shows a message if appropriate
 	 *
-	 * @param string        $permission
-	 * @param bool          $msg If false, no message is shown
-	 *
-	 * @return bool
+	 * @param bool $msg If false, no message is shown
 	 */
-	static public function access(CommandSender $sender, $permission, $msg = true){
+	static public function access(CommandSender $sender, string $permission, bool $msg = true) : bool{
 		if($sender->hasPermission($permission)) return true;
 		if($msg)
 			$sender->sendMessage(mc::_("You do not have permission to do that."));
@@ -148,11 +129,9 @@ abstract class MPMU{
 	/**
 	 * Check's if $sender is a player in game
 	 *
-	 * @param bool          $msg If false, no message is shown
-	 *
-	 * @return bool
+	 * @param bool $msg If false, no message is shown
 	 */
-	static public function inGame(CommandSender $sender, $msg = true){
+	static public function inGame(CommandSender $sender, bool $msg = true) : bool{
 		if(!($sender instanceof Player)){
 			if($msg) $sender->sendMessage(mc::_("You can only do this in-game"));
 			return false;
@@ -164,10 +143,8 @@ abstract class MPMU{
 	 * Takes a player and creates a string suitable for indexing
 	 *
 	 * @param Player|string $player - Player to index
-	 *
-	 * @return string
 	 */
-	static public function iName($player){
+	static public function iName(CommandSender|string $player) : string{
 		if($player instanceof CommandSender){
 			$player = strtolower($player->getName());
 		}
@@ -175,14 +152,9 @@ abstract class MPMU{
 	}
 
 	/**
-	 * Lile file_get_contents but for a Plugin resource
-	 *
-	 * @param Plugin $plugin
-	 * @param string $filename
-	 *
-	 * @return string|null
+	 * Like file_get_contents but for a Plugin resource
 	 */
-	static public function getResourceContents($plugin, $filename){
+	static public function getResourceContents(PluginBase $plugin, string $filename) : string|false|null{
 		$fp = $plugin->getResource($filename);
 		if($fp === null){
 			return null;
@@ -209,11 +181,10 @@ abstract class MPMU{
 	 * @param Server       $server - pocketmine server instance
 	 * @param string|array $plug - plugin to call
 	 * @param string       $method - method to call
+	 * @param array        $args - arguments to pass to method
 	 * @param mixed        $default - If the plugin does not exist or it is not enable, this value is returned
-	 *
-	 * @return mixed
 	 */
-	static public function callPlugin($server, $plug, $method, $args, $default = null){
+	static public function callPlugin(Server $server, string|array $plug, string $method, array $args, mixed $default = null) : mixed{
 		$v = null;
 		if(is_array($plug)) [$plug, $v] = $plug;
 		if(($plugin = $server->getPluginManager()->getPlugin($plug)) === null
@@ -232,15 +203,15 @@ abstract class MPMU{
 	/**
 	 * Register a command
 	 *
-	 * @param Plugin          $plugin - plugin that "owns" the command
+	 * @param PluginBase      $plugin - plugin that "owns" the command
 	 * @param CommandExecutor $executor - object that will be called onCommand
 	 * @param string          $cmd - Command name
 	 * @param array           $yaml - Additional settings for this command.
 	 *
 	 * @deprecated Moved to Cmd class
 	 */
-	static public function addCommand($plugin, $executor, $cmd, $yaml){
-		$newCmd = new \pocketmine\command\PluginCommand($cmd, $plugin, $executor);
+	static public function addCommand(PluginBase $plugin, CommandExecutor $executor, string $cmd, array $yaml) : void{
+		$newCmd = new PluginCommand($cmd, $plugin, $executor);
 		if(isset($yaml["description"]))
 			$newCmd->setDescription($yaml["description"]);
 		if(isset($yaml["usage"]))
@@ -248,7 +219,7 @@ abstract class MPMU{
 		if(isset($yaml["aliases"]) && is_array($yaml["aliases"])){
 			$aliasList = [];
 			foreach($yaml["aliases"] as $alias){
-				if(strpos($alias, ":") !== false){
+				if(str_contains($alias, ":")){
 					continue;
 				}
 				$aliasList[] = $alias;
@@ -267,11 +238,11 @@ abstract class MPMU{
 	/**
 	 * Unregisters a command
 	 *
-	 * @param string        $cmd - Command name to remove
+	 * @param string $cmd - Command name to remove
 	 *
 	 * @deprecated Moved to Cmd class
 	 */
-	static public function rmCommand($srv, $cmd){
+	static public function rmCommand(Server $srv, string $cmd) : bool{
 		$cmdMap = $srv->getCommandMap();
 		$oldCmd = $cmdMap->getCommand($cmd);
 		if($oldCmd === null) return false;
@@ -285,11 +256,8 @@ abstract class MPMU{
 	 * plugins that might cause issues.
 	 *
 	 * Currently only supports SimpleAuth and BasicHUD.
-	 *
-	 * @param Player $player
-	 * @param string $msg
 	 */
-	static public function sendPopup($player, $msg){
+	static public function sendPopup(Player $player, string $msg) : void{
 		$pm = $player->getServer()->getPluginManager();
 		if(($sa = $pm->getPlugin("SimpleAuth")) !== null){
 			// SimpleAuth also has a HUD when not logged in...
@@ -308,10 +276,8 @@ abstract class MPMU{
 	 *
 	 * @param string $txt - input text
 	 * @param string $tok - keyword to test
-	 *
-	 * @return string|null
 	 */
-	static public function startsWith($txt, $tok){
+	static public function startsWith(string $txt, string $tok) : ?string{
 		$ln = strlen($tok);
 		if(strtolower(substr($txt, 0, $ln)) != $tok) return null;
 		return trim(substr($txt, $ln));
@@ -319,10 +285,8 @@ abstract class MPMU{
 
 	/**
 	 * Look-up player
-	 *
-	 * @param string        $n
 	 */
-	static public function getPlayer(CommandSender $c, $n){
+	static public function getPlayer(CommandSender $c, string $n) : ?Player{
 		$pl = $c->getServer()->getPlayerByPrefix($n);
 		if($pl === null) $c->sendMessage(mc::_("%1% not found", $n));
 		return $pl;

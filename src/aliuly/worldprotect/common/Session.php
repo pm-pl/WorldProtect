@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 namespace aliuly\worldprotect\common;
 
+use pocketmine\command\CommandSender;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\player\Player;
@@ -15,14 +16,13 @@ use pocketmine\plugin\PluginBase;
  * Basic Session Manager functionality
  */
 class Session implements Listener{
-	protected array $state;
+	protected array $state = [];
 
 	/**
 	 * @param PluginBase $plugin - plugin that owns this session
 	 */
 	public function __construct(protected PluginBase $plugin){
 		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
-		$this->state = [];
 	}
 
 	/**
@@ -31,7 +31,7 @@ class Session implements Listener{
 	 *
 	 * @param PlayerQuitEvent $ev - Quit event
 	 */
-	public function onPlayerQuit(PlayerQuitEvent $ev){
+	public function onPlayerQuit(PlayerQuitEvent $ev) : void{
 		$n = MPMU::iName($ev->getPlayer());
 		if(isset($this->state[$n])) unset($this->state[$n]);
 	}
@@ -42,10 +42,8 @@ class Session implements Listener{
 	 * @param string        $label - state variable to get
 	 * @param Player|string $player - Player instance or name
 	 * @param mixed         $default - default value to return is no state found
-	 *
-	 * @return mixed
 	 */
-	public function getState($label, $player, $default){
+	public function getState(string $label, CommandSender|string $player, mixed $default) : mixed{
 		$player = MPMU::iName($player);
 		if(!isset($this->state[$player])) return $default;
 		if(!isset($this->state[$player][$label])) return $default;
@@ -58,10 +56,8 @@ class Session implements Listener{
 	 * @param string        $label - state variable to set
 	 * @param Player|string $player - player instance or their name
 	 * @param mixed         $val - value to set
-	 *
-	 * @return mixed
 	 */
-	public function setState($label, $player, $val){
+	public function setState(string $label, CommandSender|string $player, mixed $val) : mixed{
 		$player = MPMU::iName($player);
 		if(!isset($this->state[$player])) $this->state[$player] = [];
 		$this->state[$player][$label] = $val;
@@ -74,7 +70,7 @@ class Session implements Listener{
 	 * @param string        $label - state variable to clear
 	 * @param Player|string $player - intance of Player or their name
 	 */
-	public function unsetState($label, $player){
+	public function unsetState(string $label, CommandSender|string $player) : void{
 		$player = MPMU::iName($player);
 		if(!isset($this->state[$player])) return;
 		if(!isset($this->state[$player][$label])) return;

@@ -47,12 +47,12 @@ use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerBucketEmptyEvent;
 use pocketmine\event\player\PlayerBucketFillEvent;
 use pocketmine\player\Player;
-use pocketmine\plugin\PluginBase as Plugin;
 use function count;
+use function is_string;
 use function strtolower;
 
 class WpProtectMgr extends BaseWp implements Listener{
-	public function __construct(Plugin $plugin){
+	public function __construct(Main $plugin){
 		parent::__construct($plugin);
 		$this->owner->getServer()->getPluginManager()->registerEvents($this, $this->owner);
 		$this->enableSCmd("add", ["usage" => mc::_("<user>"),
@@ -73,7 +73,8 @@ class WpProtectMgr extends BaseWp implements Listener{
 			"permission" => "wp.cmd.protect"]);
 	}
 
-	public function onSCommand(CommandSender $c, Command $cc, $scmd, $world, array $args){
+	public function onSCommand(CommandSender $c, Command $cc, string $scmd, mixed $world, array $args) : bool{
+		if(!is_string($world)) return false;
 		switch($scmd){
 			case "add":
 				if(!count($args)) return false;
@@ -102,9 +103,7 @@ class WpProtectMgr extends BaseWp implements Listener{
 						$this->owner->authRm($world, $iusr);
 						$c->sendMessage(mc::_("[WP] %1% removed from %2%'s auth list", $i, $world));
 						$player = $this->owner->getServer()->getPlayerByPrefix($i);
-						if($player){
-							$player->sendMessage(mc::_("[WP] You have been removed from\n[WP] %1%'s auth list", $world));
-						}
+						$player?->sendMessage(mc::_("[WP] You have been removed from\n[WP] %1%'s auth list", $world));
 					}else{
 						$c->sendMessage(mc::_("[WP] %1% not known", $i));
 					}
@@ -129,14 +128,14 @@ class WpProtectMgr extends BaseWp implements Listener{
 		return false;
 	}
 
-	protected function checkBlockPlaceBreak(Player $p){
+	protected function checkBlockPlaceBreak(Player $p) : bool{
 		$world = $p->getWorld()->getFolderName();
 		if(!isset($this->wcfg[$world])) return true;
 		if($this->wcfg[$world] != "protect") return false; // LOCKED!
 		return $this->owner->canPlaceBreakBlock($p, $world);
 	}
 
-	public function onBlockBreak(BlockBreakEvent $ev){
+	public function onBlockBreak(BlockBreakEvent $ev) : void{
 		if($ev->isCancelled()) return;
 		$pl = $ev->getPlayer();
 		if($this->checkBlockPlaceBreak($pl)) return;
@@ -144,7 +143,7 @@ class WpProtectMgr extends BaseWp implements Listener{
 		$ev->cancel();
 	}
 
-	public function onBlockPlace(BlockPlaceEvent $ev){
+	public function onBlockPlace(BlockPlaceEvent $ev) : void{
 		if($ev->isCancelled()) return;
 		$pl = $ev->getPlayer();
 		if($this->checkBlockPlaceBreak($pl)) return;

@@ -15,19 +15,19 @@ declare(strict_types=1);
 //: * Limit the number of players in a world
 namespace aliuly\worldprotect;
 
+use aliuly\worldprotect\common\BasicPlugin;
 use aliuly\worldprotect\common\mc;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Listener;
 use pocketmine\player\Player;
-use pocketmine\plugin\PluginBase as Plugin;
-use pocketmine\world\World as Level;
+use pocketmine\world\World;
 use function count;
 use function intval;
 
 class MaxPlayerMgr extends BaseWp implements Listener{
-	public function __construct(Plugin $plugin){
+	public function __construct(BasicPlugin $plugin){
 		parent::__construct($plugin);
 		$this->owner->getServer()->getPluginManager()->registerEvents($this, $this->owner);
 		$this->enableSCmd("max", ["usage" => mc::_("[value]"),
@@ -36,12 +36,12 @@ class MaxPlayerMgr extends BaseWp implements Listener{
 			"aliases" => ["limit"]]);
 	}
 
-	public function getMaxPlayers($world){
-		if($world instanceof Level) $world = $world->getFolderName();
+	public function getMaxPlayers(World|string $world) : ?int{
+		if($world instanceof World) $world = $world->getFolderName();
 		return $this->getCfg($world, null);
 	}
 
-	public function onSCommand(CommandSender $c, Command $cc, $scmd, $world, array $args){
+	public function onSCommand(CommandSender $c, Command $cc, $scmd, $world, array $args) : bool{
 		if($scmd != "max") return false;
 		if(count($args) == 0){
 			$count = $this->owner->getCfg($world, "max-players", null);

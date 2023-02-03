@@ -6,7 +6,6 @@ namespace aliuly\worldprotect\common;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\plugin\PluginBase;
 use pocketmine\utils\TextFormat;
 use function count;
 use function sprintf;
@@ -16,9 +15,9 @@ use function sprintf;
  */
 class BasicHelp extends BasicCli{
 	/**
-	 * @param PluginBase $owner - plugin that owns this command
+	 * @param BasicPlugin $owner - plugin that owns this command
 	 */
-	public function __construct($owner, protected string $fmt = "/%s %s %s"){
+	public function __construct(BasicPlugin $owner, protected string $fmt = "/%s %s %s"){
 		parent::__construct($owner);
 		$this->enableSCmd("help", ["aliases" => ["?"]]);
 	}
@@ -32,17 +31,14 @@ class BasicHelp extends BasicCli{
 	 * @param mixed         $data - Additional data passed to sub-command (global options)
 	 * @param string[]      $args - arguments for sub-command
 	 */
-	public function onSCommand(CommandSender $c, Command $cc, $scmd, $data, array $args){
+	public function onSCommand(CommandSender $c, Command $cc, string $scmd, mixed $data, array $args) : bool{
 		$cm = $this->owner->getSCmdMap();
 		$pageNumber = $this->getPageNumber($args);
 
-		if(count($args)){
+		if(count($args) > 0){
 			if($args[0] == "usage"){
 				if($cm->getUsage($scmd) === null) return false;
-				$c->sendMessage(TextFormat::RED . mc::_("Usage: ") .
-					sprintf($this->fmt,
-						$cc->getName(),
-						$scmd, $cm->getUsage($scmd)));
+				$c->sendMessage(TextFormat::RED . mc::_("Usage: ") . sprintf($this->fmt, $cc->getName(), $scmd, $cm->getUsage($scmd)));
 				return true;
 			}
 			$txt = ["Help for " . $cc->getName()];

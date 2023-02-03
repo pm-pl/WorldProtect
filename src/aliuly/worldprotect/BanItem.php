@@ -30,13 +30,13 @@ use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemConsumeEvent;
-use pocketmine\item\Item;
+use pocketmine\item\LegacyStringToItemParser;
 use pocketmine\item\StringToItemParser;
-use pocketmine\plugin\PluginBase as Plugin;
 use function count;
+use function is_string;
 
 class BanItem extends BaseWp implements Listener{
-	public function __construct(Plugin $plugin){
+	public function __construct(Main $plugin){
 		parent::__construct($plugin);
 		$this->owner->getServer()->getPluginManager()->registerEvents($this, $this->owner);
 		$this->enableSCmd("banitem", ["usage" => mc::_("[id] ..."),
@@ -47,14 +47,14 @@ class BanItem extends BaseWp implements Listener{
 			"permission" => "wp.cmd.banitem"]);
 	}
 
-	public function onSCommand(CommandSender $c, Command $cc, $scmd, $world, array $args){
-		if($scmd != "banitem" && $scmd != "unbanitem") return false;
-		if(count($args) == 0){
+	public function onSCommand(CommandSender $c, Command $cc, string $scmd, mixed $world, array $args) : bool{
+		if(($scmd != "banitem" && $scmd != "unbanitem") || !is_string($world)) return false;
+		if(count($args) === 0){
 			$ids = $this->owner->getCfg($world, "banitem", []);
-			if(count($ids) == 0){
+			if(count($ids) === 0){
 				$c->sendMessage(mc::_("[WP] No banned items in %1%", $world));
 			}else{
-				$ln = mc::_("[WP] Items(%1%):", count($ids));
+				$ln = mc::_("[WP] Items(%1%):", (string) count($ids));
 				$q = "";
 				foreach($ids as $id => $n){
 					$ln .= "$q $n($id)";
@@ -67,38 +67,38 @@ class BanItem extends BaseWp implements Listener{
 		$cc = 0;
 
 		$ids = $this->owner->getCfg($world, "banitem", []);
-		if($scmd == "unbanitem"){
+		if($scmd === "unbanitem"){
 			foreach($args as $i){
-				$item = StringToItemParser::getInstance()->parse($i);
+				$item = StringToItemParser::getInstance()->parse($i) ?? LegacyStringToItemParser::getInstance()->parse($i);
 				if(isset($ids[$item->getId()])){
 					unset($ids[$item->getId()]);
 					++$cc;
 				}
 			}
-		}elseif($scmd == "banitem"){
+		}elseif($scmd === "banitem"){
 			foreach($args as $i){
-				$item = StringToItemParser::getInstance()->parse($i);
-				if($item instanceof Item && isset($ids[$item->getId()])) continue;
+				$item = StringToItemParser::getInstance()->parse($i) ?? LegacyStringToItemParser::getInstance()->parse($i);
+				if(isset($ids[$item->getId()])) continue;
 				$ids[$item->getId()] = ItemName::str($item);
 				++$cc;
 			}
 		}else{
 			return false;
 		}
-		if(!$cc){
+		if($cc <= 0){
 			$c->sendMessage(mc::_("No items updated"));
 			return true;
 		}
-		if(count($ids)){
+		if(count($ids) > 0){
 			$this->owner->setCfg($world, "banitem", $ids);
 		}else{
 			$this->owner->unsetCfg($world, "banitem");
 		}
-		$c->sendMessage(mc::_("Items changed: %1%", $cc));
+		$c->sendMessage(mc::_("Items changed: %1%", (string) $cc));
 		return true;
 	}
 
-	public function onInteract(PlayerInteractEvent $ev){
+	public function onInteract(PlayerInteractEvent $ev) : void{
 		if($ev->isCancelled()) return;
 		$pl = $ev->getPlayer();
 		if($pl->hasPermission("wp.banitem.exempt")) return;
@@ -110,7 +110,7 @@ class BanItem extends BaseWp implements Listener{
 		$ev->cancel();
 	}
 
-	public function onConsume(PlayerItemConsumeEvent $ev){
+	public function onConsume(PlayerItemConsumeEvent $ev) : void{
 		if($ev->isCancelled()) return;
 		$pl = $ev->getPlayer();
 		if($pl->hasPermission("wp.banitem.exempt")) return;
@@ -122,7 +122,7 @@ class BanItem extends BaseWp implements Listener{
 		$ev->cancel();
 	}
 
-	public function onBlockPlace(BlockPlaceEvent $ev){
+	public function onBlockPlace(BlockPlaceEvent $ev) : void{
 		if($ev->isCancelled()) return;
 		$pl = $ev->getPlayer();
 		if($pl->hasPermission("wp.banitem.exempt")) return;

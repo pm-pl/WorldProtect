@@ -14,27 +14,30 @@ use function strtolower;
 /**
  * Sub Command dispatcher
  */
-class SubCommandMap{
-	public function __construct(){
-		$this->executors = [];
-		$this->help = [];
-		$this->usage = [];
-		$this->aliases = [];
-		$this->permission = [];
-	}
+final class SubCommandMap{
+	/** @var callable[] $executors */
+	public array $executors = [];
+	/** @var string[] $help */
+	public array $help = [];
+	/** @var string[] $usage */
+	public array $usage = [];
+	/** @var string[] $aliases */
+	public array $aliases = [];
+	/** @var string[] $permission */
+	public array $permission = [];
 
 	/**
 	 * Returns the number of commands configured
 	 */
-	public function getCommandCount(){
+	public function getCommandCount() : int{
 		return count($this->executors);
 	}
 
 	/**
 	 * Dispatch commands using sub command table
 	 */
-	public function dispatchSCmd(CommandSender $sender, Command $cmd, array $args, $data = null){
-		if(count($args) == 0){
+	public function dispatchSCmd(CommandSender $sender, Command $cmd, array $args, mixed $data = null) : bool{
+		if(count($args) === 0){
 			$sender->sendMessage(mc::_("No sub-command specified"));
 			return false;
 		}
@@ -64,11 +67,11 @@ class SubCommandMap{
 	/**
 	 * Register a sub command
 	 *
-	 * @param string   $cmd - sub command
-	 * @param callable $callable - callable to execute
-	 * @param array    $opts - additional options
+	 * @param string              $cmd - sub command
+	 * @param callable            $callable - callable to execute
+	 * @param string[]|string[][] $opts - additional options
 	 */
-	public function registerSCmd($cmd, $callable, $opts){
+	public function registerSCmd(string $cmd, callable $callable, array $opts) : void{
 		$cmd = strtolower($cmd);
 		$this->executors[$cmd] = $callable;
 
@@ -85,23 +88,29 @@ class SubCommandMap{
 		}
 	}
 
-	public function getUsage($scmd){
-		return isset($this->usage[$scmd]) ? $this->usage[$scmd] : null;
+	public function getUsage(string $scmd) : ?string{
+		return $this->usage[$scmd] ?? null;
 	}
 
-	public function getAlias($scmd){
-		return isset($this->aliases[$scmd]) ? $this->aliases[$scmd] : null;
+	public function getAlias(string $scmd) : ?string{
+		return $this->aliases[$scmd] ?? null;
 	}
 
-	public function getHelpMsg($scmd){
-		return isset($this->help[$scmd]) ? $this->help[$scmd] : null;
+	public function getHelpMsg(string $scmd) : ?string{
+		return $this->help[$scmd] ?? null;
 	}
 
-	public function getHelp(){
+	/**
+	 * @return string[]
+	 */
+	public function getHelp() : array{
 		return $this->help;
 	}
 
-	public function getAliases(){
+	/**
+	 * @return string[]
+	 */
+	public function getAliases() : array{
 		return $this->aliases;
 	}
 }

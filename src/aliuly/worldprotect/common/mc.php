@@ -6,7 +6,7 @@ declare(strict_types=1);
 
 namespace aliuly\worldprotect\common;
 
-use pocketmine\plugin\Plugin;
+use pocketmine\plugin\PluginBase;
 use function array_shift;
 use function count;
 use function file_exists;
@@ -47,14 +47,16 @@ abstract class mc{
 	 * These are inserted from the following arguments.  Use "%%" to insert
 	 * a single "%".
 	 *
-	 * @param string[] $args - messages
+	 * @param string ...$args - messages
 	 *
 	 * @return string translated string
 	 */
-	public static function _(...$args){
-		$fmt = array_shift($args);
-		if(isset(self::$txt[$fmt])) $fmt = self::$txt[$fmt];
-		if(count($args)){
+	public static function _(string ...$args) : string{
+		if(count($args) > 0){
+			$fmt = array_shift($args);
+			if(isset(self::$txt[$fmt]))
+				$fmt = self::$txt[$fmt];
+
 			$vars = ["%%" => "%"];
 			$i = 1;
 			foreach($args as $j){
@@ -63,7 +65,7 @@ abstract class mc{
 			}
 			$fmt = strtr($fmt, $vars);
 		}
-		return $fmt;
+		return $fmt ?? "";
 	}
 
 	/**
@@ -75,25 +77,23 @@ abstract class mc{
 	 *
 	 * @return string - Either plural or singular forms depending on the value of $c
 	 */
-	public static function n($a, $b, $c){
+	public static function n(string $a, string $b, int $c){
 		return $c == 1 ? $a : $b;
 	}
 
 	/**
 	 * Load a message file for a PocketMine plugin.  Only uses .ini files.
 	 *
-	 * @param Plugin $plugin - owning plugin
-	 * @param string $path - output of $plugin->getFile()
+	 * @param PluginBase $plugin - owning plugin
+	 * @param string     $path - output of $plugin->getFile()
 	 *
 	 * @return int|false - false on error or the number of messages loaded
 	 */
-	public static function plugin_init($plugin, $path){
+	public static function plugin_init(PluginBase $plugin, string $path){
 		if(file_exists($plugin->getDataFolder() . "messages.ini")){
 			return self::load($plugin->getDataFolder() . "messages.ini");
 		}
-		$msgs = $path . "resources/messages/" .
-			$plugin->getServer()->getLanguage()->getLang() .
-			".ini";
+		$msgs = $path . "resources/messages/" . $plugin->getServer()->getLanguage()->getLang() . ".ini";
 		if(!file_exists($msgs)) return false;
 		return self::load($msgs);
 	}
@@ -106,17 +106,19 @@ abstract class mc{
 	 *
 	 * @return int|false - returns the number of strings loaded or false on error
 	 */
-	public static function load($f){
+	public static function load(string $f) : int|false{
 		$potxt = "\n" . file_get_contents($f) . "\n";
-		if(preg_match('/\nmsgid\s/', $potxt)){
-			$potxt = preg_replace('/\\\\n"\n"/', "\\n",
-				preg_replace('/\s+""\s*\n\s*"/', " \"",
-					$potxt));
+		if(preg_match('/\nmsgid\s/', $potxt) !== false){
+			$potxt = preg_replace(
+				'/\\\\n"\n"/',
+				"\\n",
+				preg_replace('/\s+""\s*\n\s*"/', " \"", $potxt) ?? ""
+			) ?? $potxt;
 		}
 		foreach(['/\nmsgid "(.+)"\nmsgstring "(.+)"\n/',
 			'/^\s*"(.+)"\s*=\s*"(.+)"\s*$/m'] as $re){
 			$c = preg_match_all($re, $potxt, $mm);
-			if($c){
+			if($c !== false){
 				for($i = 0; $i < $c; ++$i){
 					if($mm[2][$i] == "") continue;
 					$a = stripcslashes($mm[1][$i]);

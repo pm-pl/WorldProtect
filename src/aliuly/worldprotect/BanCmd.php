@@ -17,16 +17,17 @@ use aliuly\worldprotect\common\mc;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerCommandPreprocessEvent;
-use pocketmine\plugin\PluginBase as Plugin;
+use pocketmine\event\server\CommandEvent;
+use pocketmine\player\Player;
 use function count;
 use function implode;
+use function is_string;
 use function preg_split;
 use function strtolower;
 use function trim;
 
 class BanCmd extends BaseWp implements Listener{
-	public function __construct(Plugin $plugin){
+	public function __construct(Main $plugin){
 		parent::__construct($plugin);
 		$this->owner->getServer()->getPluginManager()->registerEvents($this, $this->owner);
 		$this->enableSCmd("bancmd", ["usage" => mc::_("[command]"),
@@ -37,20 +38,20 @@ class BanCmd extends BaseWp implements Listener{
 			"permission" => "wp.cmd.bancmd"]);
 	}
 
-	public function onSCommand(CommandSender $c, Command $cc, $scmd, $world, array $args){
-		if($scmd != "bancmd" && $scmd != "unbancmd") return false;
-		if(count($args) == 0){
+	public function onSCommand(CommandSender $c, Command $cc, string $scmd, mixed $world, array $args) : bool{
+		if(($scmd != "bancmd" && $scmd != "unbancmd") || !is_string($world)) return false;
+		if(count($args) === 0){
 			$cmds = $this->owner->getCfg($world, "bancmds", []);
-			if(count($cmds) == 0){
+			if(count($cmds) === 0){
 				$c->sendMessage(mc::_("[WP] No banned commands in %1%", $world));
 			}else{
-				$c->sendMessage(mc::_("[WP] Commands(%1%): %2%", count($cmds), implode(", ", $cmds)));
+				$c->sendMessage(mc::_("[WP] Commands(%1%): %2%", (string) count($cmds), implode(", ", $cmds)));
 			}
 			return true;
 		}
 		$cc = 0;
 		$cmds = $this->owner->getCfg($world, "bancmds", []);
-		if($scmd == "unbancmd"){
+		if($scmd === "unbancmd"){
 			foreach($args as $i){
 				if($i[0] !== "/") $i = "/" . $i;
 				$i = strtolower($i);
@@ -59,7 +60,7 @@ class BanCmd extends BaseWp implements Listener{
 					++$cc;
 				}
 			}
-		}elseif($scmd == "bancmd"){
+		}elseif($scmd === "bancmd"){
 			foreach($args as $i){
 				if($i[0] !== "/") $i = "/" . $i;
 				$i = strtolower($i);
@@ -70,32 +71,32 @@ class BanCmd extends BaseWp implements Listener{
 		}else{
 			return false;
 		}
-		if(!$cc){
+		if($cc === 0){
 			$c->sendMessage(mc::_("No commands updated"));
 			return true;
 		}
-		if(count($cmds)){
+		if(count($cmds) > 0){
 			$this->owner->setCfg($world, "bancmds", $cmds);
 		}else{
 			$this->owner->unsetCfg($world, "bancmds");
 		}
-		$c->sendMessage(mc::_("Commands changed: %1%", $cc));
+		$c->sendMessage(mc::_("Commands changed: %1%", (string) $cc));
 		return true;
 	}
 
 	/**
 	 * @priority LOWEST
 	 */
-	public function onCmd(PlayerCommandPreprocessEvent $ev){
-
+	public function onCmd(CommandEvent $ev) : void{
 		if($ev->isCancelled()) return;
-		$pl = $ev->getPlayer();
+		$pl = $ev->getSender();
+		if(!$pl instanceof Player) return;
 		$world = $pl->getWorld()->getFolderName();
 		if(!isset($this->wcfg[$world])) return;
-		$cmdline = trim($ev->getMessage());
+		$cmdline = trim($ev->getCommand());
 		if($cmdline == "") return;
 		$cmdline = preg_split('/\s+/', $cmdline);
-		$cmd = strtolower($cmdline[0]);
+		$cmd = strtolower($cmdline[0] ?? '');
 		if(!isset($this->wcfg[$world][$cmd])) return;
 		$pl->sendMessage(mc::_("That command is banned here!"));
 		$ev->cancel();

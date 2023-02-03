@@ -24,14 +24,14 @@ use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
 use pocketmine\player\Player;
-use pocketmine\plugin\PluginBase as Plugin;
 use pocketmine\utils\TextFormat;
 use function count;
+use function is_string;
 use function strtolower;
 use function substr;
 
 class WpPvpMgr extends BaseWp implements Listener{
-	public function __construct(Plugin $plugin){
+	public function __construct(Main $plugin){
 		parent::__construct($plugin);
 		$this->owner->getServer()->getPluginManager()->registerEvents($this, $this->owner);
 		$this->enableSCmd("pvp", ["usage" => mc::_("[on|off|spawn-off]"),
@@ -39,9 +39,9 @@ class WpPvpMgr extends BaseWp implements Listener{
 			"permission" => "wp.cmd.pvp"]);
 	}
 
-	public function onSCommand(CommandSender $c, Command $cc, $scmd, $world, array $args){
-		if($scmd != "pvp") return false;
-		if(count($args) == 0){
+	public function onSCommand(CommandSender $c, Command $cc, string $scmd, mixed $world, array $args) : bool{
+		if($scmd != "pvp" || !is_string($world)) return false;
+		if(count($args) === 0){
 			$pvp = $this->owner->getCfg($world, "pvp", true);
 			if($pvp === true){
 				$c->sendMessage(mc::_("[WP] PvP in %1% is %2%", $world, TextFormat::RED . mc::_("ON")));
@@ -52,7 +52,7 @@ class WpPvpMgr extends BaseWp implements Listener{
 			}
 			return true;
 		}
-		if(count($args) != 1) return false;
+		if(count($args) !== 1) return false;
 		switch(substr(strtolower($args[0]), 0, 2)){
 			case "sp":
 				$this->owner->setCfg($world, "pvp", "spawn-off");
@@ -74,7 +74,7 @@ class WpPvpMgr extends BaseWp implements Listener{
 		return true;
 	}
 
-	public function onPvP(EntityDamageEvent $ev){
+	public function onPvP(EntityDamageEvent $ev) : void{
 		if($ev->isCancelled()) return;
 		if(!($ev instanceof EntityDamageByEntityEvent)) return;
 		if(!(($pl = $ev->getEntity()) instanceof Player
@@ -83,7 +83,7 @@ class WpPvpMgr extends BaseWp implements Listener{
 		if(!isset($this->wcfg[$world])) return;
 		if($this->wcfg[$world] !== false){
 			$sp = $pl->getWorld()->getSpawnLocation();
-			$dist = $sp->distance($pl);
+			$dist = $sp->distance($pl->getPosition());
 			//if ($dist > $this->owner->getServer()->getSpawnRadius()) return;
 		}
 		$this->owner->msg($ev->getDamager(), mc::_("You are not allowed to do that here"));

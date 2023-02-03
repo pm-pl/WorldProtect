@@ -35,13 +35,13 @@ use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\player\Player;
-use pocketmine\plugin\PluginBase as Plugin;
 use function count;
 use function intval;
 use function is_numeric;
+use function is_string;
 
 class WpBordersMgr extends BaseWp implements Listener{
-	public function __construct(Plugin $plugin){
+	public function __construct(Main $plugin){
 		parent::__construct($plugin);
 		$this->owner->getServer()->getPluginManager()->registerEvents($this, $this->owner);
 		$this->enableSCmd("border", ["usage" => mc::_("[range|none|x1 z1 x2 z2]"),
@@ -50,11 +50,11 @@ class WpBordersMgr extends BaseWp implements Listener{
 
 	}
 
-	public function onSCommand(CommandSender $c, Command $cc, $scmd, $world, array $args){
-		if($scmd != "border") return false;
-		if(count($args) == 0){
+	public function onSCommand(CommandSender $c, Command $cc, string $scmd, mixed $world, array $args) : bool{
+		if($scmd != "border" || !is_string($world)) return false;
+		if(count($args) === 0){
 			$limits = $this->owner->getCfg($world, "border", null);
-			if($limits == null){
+			if($limits === null){
 				$c->sendMessage(mc::_("[WP] %1% has no borders", $world));
 			}else{
 				[$x1, $z1, $x2, $z2] = $limits;
@@ -63,9 +63,9 @@ class WpBordersMgr extends BaseWp implements Listener{
 			}
 			return true;
 		}
-		if(count($args) == 1){
+		if(count($args) === 1){
 			$range = intval($args[0]);
-			if($range == 0){
+			if($range === 0){
 				$this->owner->unsetCfg($world, "border");
 				$this->owner->getServer()->broadcastMessage(mc::_("[WP] Border for %1% removed", $world));
 				return true;
@@ -79,7 +79,7 @@ class WpBordersMgr extends BaseWp implements Listener{
 			}else
 				$unload = false;
 			$l = $this->owner->getServer()->getWorldManager()->getWorldByName($world);
-			if(!$l){
+			if($l === null){
 				$c->sendMessage(mc::_("Unable to find level %1%", $world));
 				return true;
 			}
@@ -89,7 +89,7 @@ class WpBordersMgr extends BaseWp implements Listener{
 				$pos->getX() + $range, $pos->getZ() + $range];
 
 		}
-		if(count($args) == 4){
+		if(count($args) === 4){
 			[$x1, $z1, $x2, $z2] = $args;
 			if(!is_numeric($x1) || !is_numeric($z1)
 				|| !is_numeric($x2) || !is_numeric($z2)){
@@ -105,37 +105,29 @@ class WpBordersMgr extends BaseWp implements Listener{
 		return false;
 	}
 
-	private function checkMove($world, $x, $z){
+	private function checkMove(string $world, int $x, int $z) : bool{
 		if(!isset($this->wcfg[$world])) return true;
 		[$x1, $z1, $x2, $z2] = $this->wcfg[$world];
 		if($x1 < $x && $x < $x2 && $z1 < $z && $z < $z2) return true;
 		return false;
 	}
 
-	public function onPlayerMove(PlayerMoveEvent $ev){
+	public function onPlayerMove(PlayerMoveEvent $ev) : void{
 		if($ev->isCancelled()) return;
 		$pl = $ev->getPlayer();
 		$pos = $ev->getTo();
-		if($this->checkMove($pl->getWorld()->getFolderName(),
-			$pos->getX(), $pos->getZ())) return;
+		if($this->checkMove($pl->getWorld()->getFolderName(), $pos->getX(), $pos->getZ())) return;
 		$this->owner->msg($pl, mc::_("You have reached the end of the world"));
 		$ev->cancel();
 	}
 
-	public function onTeleport(EntityTeleportEvent $ev){
+	public function onTeleport(EntityTeleportEvent $ev) : void{
 		if($ev->isCancelled()) return;
 		$pl = $ev->getEntity();
 		if(!($pl instanceof Player)) return;
 		$to = clone $ev->getTo();
 		if(!$to) return;// This should never happen!
-		if($to->getWorld()){
-			$world = $to->getWorld()->getFolderName();
-		}else{
-			$from = $ev->getFrom();
-			if(!$from) return; // OK, this would be weird...
-			if(!$from->getWorld()) return; // Can't determine the level at all!
-			$world = $from->getWorld()->getFolderName();
-		}
+		$world = $to->getWorld()->getFolderName();
 		if($this->checkMove($world, $to->getX(), $to->getZ())) return;
 		$this->owner->msg($pl, mc::_("You are teleporting outside the world"));
 		$ev->cancel();

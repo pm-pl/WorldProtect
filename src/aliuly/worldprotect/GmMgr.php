@@ -25,12 +25,12 @@ use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Listener;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
-use pocketmine\plugin\PluginBase as Plugin;
 use function array_key_last;
 use function count;
+use function is_string;
 
 class GmMgr extends BaseWp implements Listener{
-	public function __construct(Plugin $plugin){
+	public function __construct(Main $plugin){
 		parent::__construct($plugin);
 		$this->enableSCmd("gm", ["usage" => mc::_("[value]"),
 			"help" => mc::_("Sets the world game mode"),
@@ -39,8 +39,8 @@ class GmMgr extends BaseWp implements Listener{
 		$this->owner->getServer()->getPluginManager()->registerEvents($this, $this->owner);
 	}
 
-	public function onSCommand(CommandSender $c, Command $cc, $scmd, $world, array $args){
-		if($scmd != "gm") return false;
+	public function onSCommand(CommandSender $c, Command $cc, $scmd, mixed $world, array $args) : bool{
+		if($scmd != "gm" || !is_string($world)) return false;
 		if(count($args) == 0){
 			$gm = $this->owner->getCfg($world, "gamemode", null);
 			if($gm === null){
@@ -60,7 +60,7 @@ class GmMgr extends BaseWp implements Listener{
 			$this->owner->setCfg($world, "gamemode", $newmode->getAliases()[array_key_last($newmode->getAliases())]);
 			$this->owner->getServer()->broadcastMessage(mc::_("[WP] %1% gamemode set to %2%",
 				$world,
-				MPMU::gamemodeStr($newmode->getEnglishName())));
+				$newmode->getEnglishName()));
 		}
 		return true;
 	}
@@ -86,8 +86,7 @@ class GmMgr extends BaseWp implements Listener{
 		if(!$gm instanceof GameMode)
 			$gm = GameMode::fromString($gm);
 		if($gm === null) return;
-		$pl->sendMessage(mc::_("Changing gamemode to %1%",
-			MPMU::gamemodeStr($gm->getEnglishName())));
+		$pl->sendMessage(mc::_("Changing gamemode to %1%", $gm->getEnglishName()));
 
 		if($pl->getGamemode()->id() == $gm->id()) return;
 

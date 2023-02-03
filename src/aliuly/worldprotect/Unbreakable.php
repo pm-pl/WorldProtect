@@ -20,12 +20,13 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
+use pocketmine\item\LegacyStringToItemParser;
 use pocketmine\item\StringToItemParser;
-use pocketmine\plugin\PluginBase as Plugin;
 use function count;
+use function is_string;
 
 class Unbreakable extends BaseWp implements Listener{
-	public function __construct(Plugin $plugin){
+	public function __construct(Main $plugin){
 		parent::__construct($plugin);
 		$this->owner->getServer()->getPluginManager()->registerEvents($this, $this->owner);
 		$this->enableSCmd("unbreakable", ["usage" => mc::_("[id] [id]"),
@@ -38,14 +39,14 @@ class Unbreakable extends BaseWp implements Listener{
 			"aliases" => ["bab"]]);
 	}
 
-	public function onSCommand(CommandSender $c, Command $cc, $scmd, $world, array $args){
-		if($scmd != "breakable" && $scmd != "unbreakable") return false;
-		if(count($args) == 0){
+	public function onSCommand(CommandSender $c, Command $cc, string $scmd, mixed $world, array $args) : bool{
+		if(($scmd !== "breakable" && $scmd !== "unbreakable") || !is_string($world)) return false;
+		if(count($args) === 0){
 			$ids = $this->owner->getCfg($world, "unbreakable", []);
-			if(count($ids) == 0){
+			if(count($ids) === 0){
 				$c->sendMessage(mc::_("[WP] No unbreakable blocks in %1%", $world));
 			}else{
-				$ln = mc::_("[WP] Blocks(%1%):", count($ids));
+				$ln = mc::_("[WP] Blocks(%1%):", (string) count($ids));
 				$q = "";
 				foreach($ids as $id => $n){
 					$ln .= "$q $n($id)";
@@ -57,17 +58,17 @@ class Unbreakable extends BaseWp implements Listener{
 		}
 		$cc = 0;
 		$ids = $this->owner->getCfg($world, "unbreakable", []);
-		if($scmd == "breakable"){
+		if($scmd === "breakable"){
 			foreach($args as $i){
-				$item = StringToItemParser::getInstance()->parse($i);
+				$item = StringToItemParser::getInstance()->parse($i) ?? LegacyStringToItemParser::getInstance()->parse($i);
 				if(isset($ids[$item->getId()])){
 					unset($ids[$item->getId()]);
 					++$cc;
 				}
 			}
-		}elseif($scmd == "unbreakable"){
+		}elseif($scmd === "unbreakable"){
 			foreach($args as $i){
-				$item = StringToItemParser::getInstance()->parse($i);
+				$item = StringToItemParser::getInstance()->parse($i) ?? LegacyStringToItemParser::getInstance()->parse($i);
 				if(isset($ids[$item->getId()])) continue;
 				$ids[$item->getId()] = ItemName::str($item);
 				++$cc;
@@ -75,20 +76,20 @@ class Unbreakable extends BaseWp implements Listener{
 		}else{
 			return false;
 		}
-		if(!$cc){
+		if($cc <= 0){
 			$c->sendMessage(mc::_("No blocks updated"));
 			return true;
 		}
-		if(count($ids)){
+		if(count($ids) > 0){
 			$this->owner->setCfg($world, "unbreakable", $ids);
 		}else{
 			$this->owner->unsetCfg($world, "unbreakable");
 		}
-		$c->sendMessage(mc::_("Blocks changed: %1%", $cc));
+		$c->sendMessage(mc::_("Blocks changed: %1%", (string) $cc));
 		return true;
 	}
 
-	public function onBlockBreak(BlockBreakEvent $ev){
+	public function onBlockBreak(BlockBreakEvent $ev) : void{
 		if($ev->isCancelled()) return;
 		$bl = $ev->getBlock();
 		$world = $bl->getPosition()->getWorld()->getFolderName();

@@ -19,14 +19,13 @@ use aliuly\worldprotect\common\BasicPlugin;
 use aliuly\worldprotect\common\mc;
 use aliuly\worldprotect\common\MPMU;
 use pocketmine\command\Command;
-use pocketmine\command\CommandExecutor;
 use pocketmine\command\CommandSender;
 use pocketmine\event\Listener;
 use pocketmine\event\world\WorldLoadEvent;
 use pocketmine\event\world\WorldUnloadEvent;
 use pocketmine\player\Player;
 use pocketmine\utils\Config;
-use pocketmine\world\World as Level;
+use pocketmine\world\World;
 use function array_shift;
 use function count;
 use function in_array;
@@ -37,8 +36,9 @@ use function strtolower;
 use function time;
 use function unlink;
 
-class Main extends BasicPlugin implements CommandExecutor, Listener{
-	protected $wcfg;
+class Main extends BasicPlugin implements Listener{
+	/** @var array[] $wcfg */
+	protected array $wcfg = [];
 	const SPAM_DELAY = 5;
 
 	public function onEnable() : void{
@@ -75,16 +75,15 @@ class Main extends BasicPlugin implements CommandExecutor, Listener{
 	// Save/Load configurations
 	//
 	//////////////////////////////////////////////////////////////////////
-	public function loadCfg($world){
-
-		if($world instanceof Level) $world = $world->getFolderName();
+	public function loadCfg(string|World $world) : bool{
+		if($world instanceof World) $world = $world->getFolderName();
 		if(isset($this->wcfg[$world])) return true; // world is already loaded!
 		if(!$this->getServer()->getWorldManager()->isWorldGenerated($world)) return false;
 		if(!$this->getServer()->getWorldManager()->isWorldLoaded($world)){
 			$path = $this->getServer()->getDataPath() . "worlds/" . $world . "/";
 		}else{
 			$level = $this->getServer()->getWorldManager()->getWorldByName($world);
-			if(!$level) return false;
+			if($level === null) return false;
 			$path = $level->getProvider()->getPath();
 		}
 		$path .= "wpcfg.yml";
@@ -108,20 +107,19 @@ class Main extends BasicPlugin implements CommandExecutor, Listener{
 		return true;
 	}
 
-	public function saveCfg($world){
-
-		if($world instanceof Level) $world = $world->getFolderName();
+	public function saveCfg(string|World $world) : bool{
+		if($world instanceof World) $world = $world->getFolderName();
 		if(!isset($this->wcfg[$world])) return false; // Nothing to save!
 		if(!$this->getServer()->getWorldManager()->isWorldGenerated($world)) return false;
 		if(!$this->getServer()->getWorldManager()->isWorldLoaded($world)){
 			$path = $this->getServer()->getDataPath() . "worlds/" . $world . "/";
 		}else{
 			$level = $this->getServer()->getWorldManager()->getWorldByName($world);
-			if(!$level) return false;
+			if($level === null) return false;
 			$path = $level->getProvider()->getPath();
 		}
 		$path .= "wpcfg.yml";
-		if(count($this->wcfg[$world])){
+		if(count($this->wcfg[$world]) > 0){
 			$yaml = new Config($path, Config::YAML, []);
 			$yaml->setAll($this->wcfg[$world]);
 			$yaml->save();
@@ -131,9 +129,8 @@ class Main extends BasicPlugin implements CommandExecutor, Listener{
 		return true;
 	}
 
-	public function unloadCfg($world){
-
-		if($world instanceof Level) $world = $world->getFolderName();
+	public function unloadCfg(string|World $world): void{
+		if($world instanceof World) $world = $world->getFolderName();
 		if(isset($this->wcfg[$world])) unset($this->wcfg[$world]);
 		foreach($this->modules as $i => $mod){
 			if(!($mod instanceof BaseWp)) continue;
@@ -141,8 +138,8 @@ class Main extends BasicPlugin implements CommandExecutor, Listener{
 		}
 	}
 
-	public function getCfg($world, $key, $default){
-		if($world instanceof Level) $world = $world->getFolderName();
+	public function getCfg(string|World $world, string $key, mixed $default) : mixed{
+		if($world instanceof World) $world = $world->getFolderName();
 		if($this->getServer()->getWorldManager()->isWorldLoaded($world))
 			$unload = false;
 		else{
@@ -158,8 +155,8 @@ class Main extends BasicPlugin implements CommandExecutor, Listener{
 		return $res;
 	}
 
-	public function setCfg($world, $key, $value){
-		if($world instanceof Level) $world = $world->getFolderName();
+	public function setCfg(string|World $world, string $key, mixed $value) : bool{
+		if($world instanceof World) $world = $world->getFolderName();
 		if($this->getServer()->getWorldManager()->isWorldLoaded($world))
 			$unload = false;
 		else{
@@ -179,8 +176,8 @@ class Main extends BasicPlugin implements CommandExecutor, Listener{
 		return true;
 	}
 
-	public function unsetCfg($world, $key){
-		if($world instanceof Level) $world = $world->getFolderName();
+	public function unsetCfg(string|World $world, string $key) : bool{
+		if($world instanceof World) $world = $world->getFolderName();
 		if($this->getServer()->getWorldManager()->isWorldLoaded($world))
 			$unload = false;
 		else{
@@ -197,6 +194,7 @@ class Main extends BasicPlugin implements CommandExecutor, Listener{
 			&& ($this->modules[$key] instanceof BaseWp))
 			$this->modules[$key]->unsetCfg($world);
 		if($unload) $this->unloadCfg($world);
+		return true;
 	}
 
 	//////////////////////////////////////////////////////////////////////
@@ -204,11 +202,11 @@ class Main extends BasicPlugin implements CommandExecutor, Listener{
 	// Event handlers
 	//
 	//////////////////////////////////////////////////////////////////////
-	public function onLevelLoad(WorldLoadEvent $e){
+	public function onLevelLoad(WorldLoadEvent $e) : void{
 		$this->loadCfg($e->getWorld());
 	}
 
-	public function onLevelUnload(WorldUnloadEvent $e){
+	public function onLevelUnload(WorldUnloadEvent $e) : void{
 		$this->unloadCfg($e->getWorld());
 	}
 
@@ -222,12 +220,7 @@ class Main extends BasicPlugin implements CommandExecutor, Listener{
 		if($sender instanceof Player){
 			$world = $sender->getWorld()->getFolderName();
 		}else{
-			$level = $this->getServer()->getWorldManager()->getDefaultWorld();
-			if($level){
-				$world = $level->getFolderName();
-			}else{
-				$world = null;
-			}
+			$world = $this->getServer()->getWorldManager()->getDefaultWorld()?->getFolderName();
 		}
 		if(isset($args[0]) && $this->getServer()->getWorldManager()->isWorldGenerated($args[0])){
 			$world = array_shift($args);
@@ -240,10 +233,9 @@ class Main extends BasicPlugin implements CommandExecutor, Listener{
 		return $this->dispatchSCmd($sender, $cmd, $args, $world);
 	}
 
-	public function canPlaceBreakBlock(Player $c, $world){
+	public function canPlaceBreakBlock(Player $c, string $world){
 		$pname = strtolower($c->getName());
-		if(isset($this->wcfg[$world]["auth"])
-			&& count($this->wcfg[$world]["auth"])){
+		if(isset($this->wcfg[$world]["auth"]) && count($this->wcfg[$world]["auth"]) > 0){
 			// Check if user is in auth list...
 			if(isset($this->wcfg[$world]["auth"][$pname])) return true;
 			return false;
@@ -252,7 +244,7 @@ class Main extends BasicPlugin implements CommandExecutor, Listener{
 		return false;
 	}
 
-	public function isAuth($c, $world){
+	public function isAuth(CommandSender $c, string $world){
 		if(!($c instanceof Player)) return true;
 		if(!isset($this->wcfg[$world])) return true;
 		if(!isset($this->wcfg[$world]["auth"])) return true;
@@ -265,19 +257,19 @@ class Main extends BasicPlugin implements CommandExecutor, Listener{
 		return false;
 	}
 
-	public function authAdd($world, $usr){
+	public function authAdd(string $world, string $usr) : void{
 		$auth = $this->getCfg($world, "auth", []);
 		if(isset($auth[$usr])) return;
 		$auth[$usr] = $usr;
 		$this->setCfg($world, "auth", $auth);
 	}
 
-	public function authCheck($world, $usr){
+	public function authCheck(string $world, string $usr) : bool{
 		$auth = $this->getCfg($world, "auth", []);
 		return isset($auth[$usr]);
 	}
 
-	public function authRm($world, $usr){
+	public function authRm(string $world, string $usr) : void{
 		$auth = $this->getCfg($world, "auth", []);
 		if(!isset($auth[$usr])) return;
 		unset($auth[$usr]);
@@ -288,7 +280,7 @@ class Main extends BasicPlugin implements CommandExecutor, Listener{
 		}
 	}
 
-	public function msg($pl, $txt){
+	public function msg(Player $pl, string $txt) : void{
 		if(MPMU::apiVersion("2.0.0")){
 			$pl->sendTip($txt);
 			return;
@@ -302,7 +294,7 @@ class Main extends BasicPlugin implements CommandExecutor, Listener{
 	/**
 	 * @API
 	 */
-	public function getMaxPlayers($world){
+	public function getMaxPlayers(string $world) : ?int{
 		if(isset($this->modules["max-players"]))
 			return $this->modules["max-players"]->getMaxPlayers($world);
 		return null;

@@ -34,7 +34,6 @@ declare(strict_types=1);
 namespace aliuly\worldprotect;
 
 use aliuly\worldprotect\common\mc;
-use aliuly\worldprotect\common\PluginCallbackTask;
 use pocketmine\command\Command;
 use pocketmine\command\CommandExecutor;
 use pocketmine\command\CommandSender;
@@ -42,18 +41,19 @@ use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\player\Player;
-use pocketmine\plugin\PluginBase as Plugin;
+use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 use function array_shift;
 use function count;
 use function implode;
 use function is_array;
+use function is_string;
 
 class WpMotdMgr extends BaseWp implements Listener, CommandExecutor{
-	protected $ticks;
-	protected $auto;
+	protected int $ticks = 15;
+	protected bool $auto = true;
 
-	static public function defaults(){
+	static public function defaults() : array{
 		return [
 			//= cfg:motd
 			"# ticks" => "line delay when showing multi-line motd texts.",
@@ -63,7 +63,7 @@ class WpMotdMgr extends BaseWp implements Listener, CommandExecutor{
 		];
 	}
 
-	public function __construct(Plugin $plugin, $cfg){
+	public function __construct(Main $plugin, array $cfg){
 		parent::__construct($plugin);
 		Server::getInstance()->getPluginManager()->registerEvents($this, $this->owner);
 		$this->ticks = $cfg["ticks"];
@@ -83,12 +83,7 @@ class WpMotdMgr extends BaseWp implements Listener, CommandExecutor{
 		if($sender instanceof Player){
 			$world = $sender->getWorld()->getFolderName();
 		}else{
-			$level = $this->owner->getServer()->getWorldManager()->getDefaultWorld();
-			if($level){
-				$world = $level->getFolderName();
-			}else{
-				$world = null;
-			}
+			$world = $this->owner->getServer()->getWorldManager()->getDefaultWorld()?->getFolderName();
 		}
 		if(isset($args[0]) && $this->owner->getServer()->getWorldManager()->isWorldGenerated($args[0])){
 			$world = array_shift($args);
@@ -102,8 +97,8 @@ class WpMotdMgr extends BaseWp implements Listener, CommandExecutor{
 		return true;
 	}
 
-	public function onSCommand(CommandSender $c, Command $cc, $scmd, $world, array $args){
-		if($scmd != "motd") return false;
+	public function onSCommand(CommandSender $c, Command $cc, $scmd, mixed $world, array $args) : bool{
+		if($scmd != "motd" || !is_string($world)) return false;
 		if(count($args) == 0){
 			$this->owner->unsetCfg($world, "motd");
 			$c->sendMessage(mc::_("[WP] motd for %1% removed", $world));
@@ -114,16 +109,16 @@ class WpMotdMgr extends BaseWp implements Listener, CommandExecutor{
 		return true;
 	}
 
-	private function showMotd($c, $world){
+	private function showMotd(CommandSender $c, string $world) : void{
 		if(!$c->hasPermission("wp.motd")) return;
 
 		$motd = $this->owner->getCfg($world, "motd", null);
-		if($motd === null) return true;
+		if($motd === null) return;
 		if(is_array($motd)){
 			if($c instanceof Player){
 				$ticks = $this->ticks;
 				foreach($motd as $ln){
-					$this->owner->getScheduler()->scheduleDelayedTask(new PluginCallbackTask($this->owner, [$c, "sendMessage"], [$ln]), $ticks);
+					$this->owner->getScheduler()->scheduleDelayedTask(new ClosureTask(static fn() => $c->sendMessage($ln)), $ticks);
 					$ticks += $this->ticks;
 				}
 			}else{
@@ -136,13 +131,13 @@ class WpMotdMgr extends BaseWp implements Listener, CommandExecutor{
 		}
 	}
 
-	public function onJoin(PlayerJoinEvent $ev){
+	public function onJoin(PlayerJoinEvent $ev) : void{
 		if(!$this->auto) return;
 		$pl = $ev->getPlayer();
 		$this->showMotd($pl, $pl->getWorld()->getFolderName());
 	}
 
-	public function onLevelChange(EntityTeleportEvent $ev){
+	public function onLevelChange(EntityTeleportEvent $ev) : void{
 		if($ev->getFrom()->getWorld()->getFolderName() !== $ev->getTo()->getWorld()->getFolderName()){
 
 			if(!$this->auto) return;
