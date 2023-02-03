@@ -11,59 +11,59 @@ website: https://github.com/Muirfield/pocketmine-plugins/tree/master/WorldProtec
 commands:
   worldprotect:
     description: Manage worlds
-    usage: "/wp <help|sub-cmd> [options]"
-    permission: wp.cmd.all
-    aliases: [wp]
+    usage: "/worldprotect <help|sub-cmd> [options: string]"
+    permission: worldprotect.cmd.all
+    aliases: ['wp']
 
 permissions:
-  wp.motd:
+  worldprotect.motd:
     default: true
     description: "Display MOTD"
-  wp.cmd.all:
+  worldprotect.cmd.all:
     default: op
     description: "Allow access to protect command"
-  wp.cmd.protect:
+  worldprotect.cmd.protect:
     default: op
     description: "Change protect mode"
-  wp.cmd.protect.auth:
+  worldprotect.cmd.protect.auth:
     default: op
     description: "Permit place/destroy in protected worlds"
-  wp.cmd.border:
+  worldprotect.cmd.border:
     default: op
     description: "Allow contfol of border functionality"
-  wp.cmd.pvp:
+  worldprotect.cmd.pvp:
     default: op
     description: "Allow PvP controls"
-  wp.cmd.noexplode:
+  worldprotect.cmd.noexplode:
     default: op
     description: "Allow NoExplode controls"
-  wp.cmd.limit:
+  worldprotect.cmd.limit:
     default: op
     description: "Allow control to limit functionality"
-  wp.cmd.wpmotd:
+  worldprotect.cmd.wpmotd:
     default: op
     description: "Allow editing the motd"
-  wp.cmd.addrm:
+  worldprotect.cmd.addrm:
     default: op
     description: "Allow modifying the auth list"
-  wp.cmd.unbreakable:
+  worldprotect.cmd.unbreakable:
     default: op
     description: "Modify unbreakable block list"
-  wp.cmd.bancmd:
+  worldprotect.cmd.bancmd:
     default: op
     description: "Ban/unban commands"
-  wp.cmd.banitem:
+  worldprotect.cmd.banitem:
     default: op
     description: "Ban/unban items"
-  wp.banitem.exempt:
+  worldprotect.banitem.exempt:
     default: false
     description: "it is able to use banned items"
-  wp.cmd.info:
+  worldprotect.cmd.info:
     default: true
-    description: "Show WP config info"
-  wp.cmd.gm:
+    description: "Show worldprotect config info"
+  worldprotect.cmd.gm:
     default: op
     description: "Allow setting a per-world gamemode"
-  wp.cmd.gm.exempt:
+  worldprotect.cmd.gm.exempt:
     default: false
     description: "Users with this permissions will ignore per world gm"
