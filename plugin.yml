@@ -8,6 +8,10 @@ version: 3.0.0
 author: aliuly
 website: https://github.com/Muirfield/pocketmine-plugins/tree/master/WorldProtect
 
+softdepend:
+  - SimpleAuth
+  - BasicHUD
+
 commands:
   worldprotect:
     description: Manage worlds

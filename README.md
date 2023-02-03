@@ -1,6 +1,7 @@
 <img src="https://raw.githubusercontent.com/poggit-orphanage/WorldProtect/master/media/WorldProtect-icon.png" style="width:64px;height:64px" width="64" height="64"/>
 
 <!-- meta:Categories = Anti-Griefing -->
+<!-- meta:OptionalPlugins = SimpleAuth, BasicHUD -->
 <!-- meta:PluginAccess = Commands, Data Saving, World Editing -->
 <!-- template: gd2/header.md -->
 
