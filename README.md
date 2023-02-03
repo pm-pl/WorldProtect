@@ -321,16 +321,6 @@ If **true** the feature is enabled.  if **false** the feature is disabled.
 
 <!-- end-include -->
 
-## Issues
-
-* World names can not contain spaces.
-* When going from survival to creative then back to survival inventory
-  contents get lost.
-
-### Features Requested
-
-* Tim // robske Büba: BanItem can ban items per {item-id}:{meta-data}
-
 <!-- template: gd2/mctxt.md -->
 
 ## Translations
@@ -347,7 +337,7 @@ You can provide your own message file by creating a file called
 Check [github](https://github.com/Muirfield/pocketmine-plugins/tree/master/WorldProtect/resources/messages/)
 for sample files.
 Alternatively, if you have
-[GrabBag](http://forums.pocketmine.net/plugins/grabbag.1060/) v2.3
+[GrabBag](https://poggit.pmmp.io/p/GrabBag) v2.3
 installed, you can create an empty **messages.ini** using the command:
 
      pm dumpmsgs WorldProtect [lang]
@@ -365,7 +355,7 @@ $this->getServer()->getPluginManager()->getPlugin("WorldProtect")->getMaxPlayers
 Where:
 
 * $this - plugin pointer
-* $world - either a world name or an instance of Level.
+* $world - either a world name or an instance of World.
 
 Returns an integer or null.
 
