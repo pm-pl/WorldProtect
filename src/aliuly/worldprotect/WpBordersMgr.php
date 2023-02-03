@@ -126,7 +126,6 @@ class WpBordersMgr extends BaseWp implements Listener{
 		$pl = $ev->getEntity();
 		if(!($pl instanceof Player)) return;
 		$to = clone $ev->getTo();
-		if(!$to) return;// This should never happen!
 		$world = $to->getWorld()->getFolderName();
 		if($this->checkMove($world, $to->getX(), $to->getZ())) return;
 		$this->owner->msg($pl, mc::_("You are teleporting outside the world"));

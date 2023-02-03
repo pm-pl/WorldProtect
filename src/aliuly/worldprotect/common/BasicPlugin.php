@@ -32,7 +32,7 @@ abstract class BasicPlugin extends PluginBase{
 	 * Given some defaults, this will load optional features
 	 *
 	 * @param string                    $ns - namespace used to search for classes to load
-	 * @param array<array<string|bool>> $mods - optional module definition
+	 * @param array<array<string|bool|array<string>>> $mods - optional module definition
 	 * @param array                     $defaults - default options to use for config.yml
 	 * @param string                    $xhlp - optional help format.
 	 */

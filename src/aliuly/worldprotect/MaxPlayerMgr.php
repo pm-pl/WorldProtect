@@ -71,22 +71,13 @@ class MaxPlayerMgr extends BaseWp implements Listener{
 
 		$from = $ev->getFrom()->getWorld();
 		$to = $ev->getTo()->getWorld();
-		if(!$from){
-			// THIS SHOULDN'T HAPPEN!
-			return;
-		}
-		if(!$to){
-			// Somebody did not initialize the level properly!
-			// But we return because they do not intent to change worlds
-			return;
-		}
 
 		$from = $from->getFolderName();
 		$to = $to->getFolderName();
 
-		if($from == $to) return;
+		if($from === $to) return;
 		$max = $this->getCfg($to, 0);
-		if($max == 0) return;
+		if($max === 0) return;
 		$np = count($this->owner->getServer()->getWorldManager()->getWorldByName($to)->getPlayers());
 		if($np >= $max){
 			$ev->cancel();
