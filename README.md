@@ -367,6 +367,9 @@ Returns an integer or null.
 
 # Changes
 
+* 3.0.0: Update to API 4.0.0
+  - Fixed inventory saving when switching gamemodes
+  - Typehinted and return typed all methods
 * 2.3.0: Updated to API 2.0.0
   - Added banitem exempted permissions (@BobbyTowers)
   - Closes #47 (@SleepSpace9)
