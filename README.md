@@ -8,11 +8,11 @@
 
 - Summary: protect worlds from griefers, pvp, limits and borders
 - PocketMine-MP version: 4.0.0
-- DependencyPlugins: 
-- OptionalPlugins: 
+- DependencyPlugins: N/A
+- OptionalPlugins: SimpleAuth, BasicHUD 
 - Categories: Anti-Griefing 
 - Plugin Access: Commands, Data Saving, World Editing 
-- WebSite: https://github.com/Muirfield/pocketmine-plugins/tree/master/WorldProtect
+- Website: https://github.com/poggit-orphanage/WorldProtect
 
 <!-- end-include -->
 
@@ -25,22 +25,22 @@
 
 It is difficult to carry a conversation in the reviews.  If you
 have a question/bug-report/request please use the
-[Thread](http://forums.pocketmine.net/threads/worldprotect.7517/) for
+[Issue Tracker](https://github.com/poggit-orphanage/WorldProtect/issues) for
 that.  You are more likely to get a response and help that way.
 
 _NOTE:_
 
-This documentation was last updated for version **2.3.0**.
+This documentation was last updated for version **3.0.0**.
 
 Please go to
-[github](https://github.com/Muirfield/pocketmine-plugins/tree/master/WorldProtect)
+[github](https://github.com/poggit-orphanage/WorldProtect)
 for the most up-to-date documentation.
 
-You can also download this plugin from this [page](https://github.com/Muirfield/pocketmine-plugins/releases/tag/WorldProtect-2.3.0).
+You can also download this plugin from this [page](https://poggit.pmmp.io/p/WorldProtect).
 
 <!-- end-include -->
 
-A full featured World protection plugin.
+A fully featured World protection plugin.
 
 Features:
 
@@ -76,7 +76,7 @@ specified in the _server.properties_ file.
 
 * add: Add player to the authorized list
 * bancmd|unbancmd: Prevents commands to be used in worlds
-* banitem|unbanitem: Control itmes that can/cannot be used
+* banitem|unbanitem: Control items that can/cannot be used
 * border: defines a border for a world
 * gm: Configures per world game modes
 * lock: Locks world, not even Op can use.
@@ -102,7 +102,7 @@ specified in the _server.properties_ file.
 
 ## Documentation
 
-This plugin let's you limit what happens in a world.
+This plugin allows you limit what happens in a world.
 
 <!-- snippet: docs -->
 It is possible to create limits in your limitless worlds.
@@ -111,7 +111,7 @@ useful if you want to avoid overloading the server by
 generating new Terrain.
 
 Show a text file when players enter a world.  To explain players
-what is allowed (or not allowed) in specific worlds.  For example
+what is allowed (or not allowed) in specific worlds.  For example,
 you could warn players when they are entering a PvP world.
 
 This plugin protects worlds from griefers by restricing placing and breaking
@@ -119,11 +119,11 @@ blocks.  Worlds have three protection levels:
 
 * unlock - anybody can place/break blocks
 * protect - players in the _authorized_ list or, if the list is empty,
-  players with **wp.cmd.protect.auth** permission can place/break
+  players with **worldprotect.cmd.protect.auth** permission can place/break
   blocks.
 * lock - nobody (even *ops*) is allowed to place/break blocks.
 
-Some items are able to modify a world by being consume (i.e. do not
+Some items are able to modify a world by being consumed (i.e. do not
 need to be placed).  For example, _bonemeal_, _water or lava buckets_.
 To prevent this type of griefing, you can use the **banitem**
 feature.
@@ -143,68 +143,68 @@ The following commands are available:
 * /worldprotect: Main WorldProtect command<br/>
   usage: /worldprotect  _[world]_ _&lt;subcmd&gt;_ _[options]_
 * add: Add player to the authorized list<br/>
-  usage: /wp _[world]_ **add** _&lt;player&gt;_
+  usage: /worldprotect _[world]_ **add** _&lt;player&gt;_
 * bancmd|unbancmd: Prevents commands to be used in worlds<br/>
-  usage: /wp _[world]_ **bancmd|unbancmd** _[command]_
+  usage: /worldprotect _[world]_ **bancmd|unbancmd** _[command]_
   
   If no commands are given it will show a list of banned
-  commands.   Otherwise the _command_ will be added/removed
-  from the ban list
+  commands.   The _command_ will be added/removed
+  from the ban list otherwise.
   
 * banitem|unbanitem: Control itmes that can/cannot be used<br/>
-  usage: /wp  _[world]_ **banitem|unbanitem** _[Item-ids]_
+  usage: /worldprotect  _[world]_ **banitem|unbanitem** _[Item-ids]_
   
   Manages which Items can or can not be used in a given world.
    You can get a list of items currently banned
-   if you do not specify any _[item-ids]_.  Otherwise these are
-   added or removed from the list.
+   if you do not specify any _[item-ids]_.  These are
+   added or removed from the list otherwise.
   
 * border: defines a border for a world<br/>
-  usage: /wp  _[world]_ **border** _[range|none|x1 z1 x2 z2]_
+  usage: /worldprotect  _[world]_ **border** _[range|none|x1 z1 x2 z2]_
   
   Defines a border for an otherwise infinite world.  Usage:
-    - /wp _[world]_ **border**
+    - /worldprotect _[world]_ **border**
       - will show the current borders for _[world]_.
-    - /wp _[world]_ **border** _x1 z1 x2 z2_
+    - /worldprotect _[world]_ **border** _x1 z1 x2 z2_
       - define the border as the region defined by _x1,z1_ and _x2,z2_.
-    - /wp _[world]_ **border** _range_
+    - /worldprotect _[world]_ **border** _range_
       - define the border as being _range_ blocks in `x` and `z` axis away
         from the spawn point.
-    - /wp _[world]_ **border** **none**
+    - /worldprotect _[world]_ **border** **none**
       - Remove borders
   
 * gm: Configures per world game modes<br/>
-  usage: /wp _[world]_ gm _[value]_
+  usage: /worldprotect _[world]_ gm _[value]_
   
   Options:
-  - /wp _[world]_ **gm**
+  - /worldprotect _[world]_ **gm**
     - show current gamemode
-  - /wp _[world]_ **gm** _&lt;mode&gt;_
+  - /worldprotect _[world]_ **gm** _&lt;mode&gt;_
     - Sets the world gamemode to _mode_
-  - /wp _[world]_ **gm** **none**
+  - /worldprotect _[world]_ **gm** **none**
     - Removes per world game mode
   
 * lock: Locks world, not even Op can use.<br/>
-  usage: /wp _[world]_ **lock**
+  usage: /worldprotect _[world]_ **lock**
 * ls: List info on world protection.<br/>
-  usage: /wp **ls** _[world]_
-     - /wp **ls**
+  usage: /worldprotect **ls** _[world]_
+     - /worldprotect **ls**
        - shows an overview of protections applied to all loaded worlds
-     - /wp **ls** _[world]_
-       - shows details of an specific world
+     - /worldprotect **ls** _[world]_
+       - lists details of a specific world
 * max: Limits the number of players per world<br/>
-   usage : /wp _[world]_ max _[value]_
-    - /wp _[world]_ **max**
+   usage : /worldprotect _[world]_ max _[value]_
+    - /worldprotect _[world]_ **max**
       - shows the current limit
-    - /wp _[world]_ **max** _value_
+    - /worldprotect _[world]_ **max** _value_
       - Sets limit value to _value_.
-    - /wp _[world]_ **max** **0**
+    - /worldprotect _[world]_ **max** **0**
       - Removes world limits
   
 * motd: Modifies the world's *motd* text.<br/>
-  usage: /wp _[world]_ **motd** _&lt;text&gt;_
+  usage: /worldprotect _[world]_ **motd** _&lt;text&gt;_
   
-  Let's you modify the world's *motd* text.  The command only
+  Allows you to modify the world's *motd* text.  The command only
   supports a single line, however you can modify the *motd* text
   by editing the **wpcfg.yml** file that is stored in the **world**
   folder.  For example:
@@ -216,34 +216,34 @@ The following commands are available:
       - line 4... etc
   - [/CODE]
 * noexplode: Stops explosions in a world<br/>
-  usage: /wp  _[world]_ **noexplode** _[off|world|spawn]_
-    - /wp _[world]_ **noexplode** **off**
+  usage: /worldprotect  _[world]_ **noexplode** _[off|world|spawn]_
+    - /worldprotect _[world]_ **noexplode** **off**
       - no-explode feature is `off`, so explosions are allowed.
-    - /wp _[world]_ **noexplode** **world**
+    - /worldprotect _[world]_ **noexplode** **world**
       - no explosions allowed in the whole _world_.
-    - /wp _[world]_ **noexplode** **spawn**
+    - /worldprotect _[world]_ **noexplode** **spawn**
       - no explosions allowed in the world's spawn area.
   
 * protect: Protects world, only certain players can build.<br/>
-  usage: /wp _[world]_ **protect**
+  usage: /worldprotect _[world]_ **protect**
   
   When in this mode, only players in the _authorized_ list can build.
-  If there is no authorized list, it will use **wp.cmd.protect.auth**
+  If there is no authorized list, it will use **worldprotect.cmd.protect.auth**
   permission instead.
   
 * pvp: Controls PvP in a world<br/>
-  usage: /wp  _[world]_ **pvp** _[on|off|spawn-off]_
-    - /wp _[world]_ **pvp** **off**
+  usage: /worldprotect  _[world]_ **pvp** _[on|off|spawn-off]_
+    - /worldprotect _[world]_ **pvp** **off**
       - no PvP is allowed.
-    - /wp _[world]_ **pvp** **on**
+    - /worldprotect _[world]_ **pvp** **on**
       - PvP is allowed
-    - /wp _[world]_ **pvp** **spawn-off**
+    - /worldprotect _[world]_ **pvp** **spawn-off**
       - PvP is allowed except if inside the spawn area.
   
 * rm: Removes player from the authorized list<br/>
-  usage: /wp _[world]_ **rm** _&lt;player&gt;_
+  usage: /worldprotect _[world]_ **rm** _&lt;player&gt;_
 * unbreakable|breakable: Control blocks that can/cannot be broken<br/>
-  usage: /wp  _[world]_ **breakable|unbreakable** _[block-ids]_
+  usage: /worldprotect  _[world]_ **breakable|unbreakable** _[block-ids]_
   
   Manages which blocks can or can not be broken in a given world.
   You can get a list of blocks currently set to **unbreakable**
@@ -251,7 +251,7 @@ The following commands are available:
   added or removed from the list.
   
 * unlock: Removes protection<br/>
-  usage: /wp _[world]_ **unlock**
+  usage: /worldprotect _[world]_ **unlock**
 
 <!-- end-include -->
 
@@ -300,23 +300,23 @@ If **true** the feature is enabled.  if **false** the feature is disabled.
 
 ### Permission Nodes
 
-* wp.motd: Display MOTD
-* wp.cmd.all (op): Allow access to protect command
-* wp.cmd.protect (op): Change protect mode
-* wp.cmd.protect.auth (op): Permit place/destroy in protected worlds
-* wp.cmd.border (op): Allow contfol of border functionality
-* wp.cmd.pvp (op): Allow PvP controls
-* wp.cmd.noexplode (op): Allow NoExplode controls
-* wp.cmd.limit (op): Allow control to limit functionality
-* wp.cmd.wpmotd (op): Allow editing the motd
-* wp.cmd.addrm (op): Allow modifying the auth list
-* wp.cmd.unbreakable (op): Modify unbreakable block list
-* wp.cmd.bancmd (op): Ban/unban commands
-* wp.cmd.banitem (op): Ban/unban items
-* wp.banitem.exempt (disabled): it is able to use banned items
-* wp.cmd.info: Show WP config info
-* wp.cmd.gm (op): Allow setting a per-world gamemode
-* wp.cmd.gm.exempt (disabled): Users with this permissions will ignore per world gm
+* worldprotect.motd: Display MOTD
+* worldprotect.cmd.all (op): Allow access to protect command
+* worldprotect.cmd.protect (op): Change protect mode
+* worldprotect.cmd.protect.auth (op): Permit place/destroy in protected worlds
+* worldprotect.cmd.border (op): Allow contfol of border functionality
+* worldprotect.cmd.pvp (op): Allow PvP controls
+* worldprotect.cmd.noexplode (op): Allow NoExplode controls
+* worldprotect.cmd.limit (op): Allow control to limit functionality
+* worldprotect.cmd.wpmotd (op): Allow editing the motd
+* worldprotect.cmd.addrm (op): Allow modifying the auth list
+* worldprotect.cmd.unbreakable (op): Modify unbreakable block list
+* worldprotect.cmd.bancmd (op): Ban/unban commands
+* worldprotect.cmd.banitem (op): Ban/unban items
+* worldprotect.banitem.exempt (disabled): it is able to use banned items
+* worldprotect.cmd.info: Show WP config info
+* worldprotect.cmd.gm (op): Allow setting a per-world gamemode
+* worldprotect.cmd.gm.exempt (disabled): Users with this permissions will ignore per world gm
 
 <!-- end-include -->
 
