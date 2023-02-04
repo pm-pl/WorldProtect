@@ -75,7 +75,7 @@ class WpMotdMgr extends BaseWp implements Listener, CommandExecutor{
 		$this->enableCmd("motd",
 			["description" => mc::_("Shows world motd text"),
 				"usage" => "/motd [world]",
-				"permission" => "wp.motd"]);
+				"permission" => "worldprotect.motd"]);
 	}
 
 	public function onCommand(CommandSender $sender, Command $cmd, string $label, array $args) : bool{
@@ -110,7 +110,7 @@ class WpMotdMgr extends BaseWp implements Listener, CommandExecutor{
 	}
 
 	private function showMotd(CommandSender $c, string $world) : void{
-		if(!$c->hasPermission("wp.motd")) return;
+		if(!$c->hasPermission("worldprotect.motd")) return;
 
 		$motd = $this->owner->getCfg($world, "motd", null);
 		if($motd === null) return;

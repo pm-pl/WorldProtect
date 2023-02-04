@@ -105,7 +105,7 @@ class WpBordersMgr extends BaseWp implements Listener{
 		return false;
 	}
 
-	private function checkMove(string $world, int $x, int $z) : bool{
+	private function checkMove(string $world, int|float $x, int|float $z) : bool{
 		if(!isset($this->wcfg[$world])) return true;
 		[$x1, $z1, $x2, $z2] = $this->wcfg[$world];
 		if($x1 < $x && $x < $x2 && $z1 < $z && $z < $z2) return true;
