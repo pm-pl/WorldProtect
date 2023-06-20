@@ -5,6 +5,20 @@
 <!-- meta:PluginAccess = Commands, Data Saving, World Editing -->
 <!-- template: gd2/header.md -->
 
+# NO LONGER MAINTAINED! -> Please use [WorldDefend](https://github.com/Taylor-pm-pl/WorldDefend) by [@Taylor-pm-pl](https://github.com/Taylor-pm-pl)
+
+<h3 style="color: red;">THIS PLUGIN IS OUTDATED AND NO LONGER MAINTAINED!</h3>
+
+<br />
+
+<hr>
+
+<br />
+
+<hr>
+
+<br />
+
 # WorldProtect
 
 - Summary: protect worlds from griefers, pvp, limits and borders
